@@ -158,6 +158,15 @@ router.delete('/group/:groupId', function(req, res) {
     }
   )
 })
-
+router.delete('/class/:classId', function(req, res) {
+  Class.delete(req.params.classId).then(
+    (successMessage) => {
+      res.json({error: false, message:successMessage});
+    },
+    (errorMessage) => {
+      res.json({error: true, message: errorMessage});
+    }
+  )
+})
 
 module.exports = router;

@@ -98,12 +98,31 @@ function hash(password) {
 function errFilter(err, finalErrorMessage) {
   if (typeof err === 'string')
     finalErrorMessage = err;
-  // finalErrorMessage = err   // use this to debug
+  finalErrorMessage = err   // use this to debug
   return Promise.reject(finalErrorMessage)
 }
 //-------------------------------------------------------------------
 
 //Class--------------------------------------------------------------
+  //method
+ClassSchema.methods.beforeDeleteClass = function() {
+  var groupsId = this.groupsId;
+  var teachersId = this.teachersId;
+  var groupsDeletedPromise = groupsId.map(
+    groupId => Group.delete(groupId)
+  )
+  var teachersDeletedPromise = teachersId.map(
+    teacherId => User.findTeacherById(teacherId)
+                     .then(teacherData => teacherData.updateProperty({classId: null}))
+                     .then(teacherData => teacherData.save())
+  )
+  return Promise.all(groupsDeletedPromise.concat(teachersDeletedPromise))
+                .then(
+                  () => this,
+                  (err) => errFilter(err, '删除班级失败')
+                )
+}
+  //static
 ClassSchema.statics.findById = function(classId) {
 	return Class.findOne({_id: classId})
 							.then(classData => detectClassExist(classData));
@@ -138,6 +157,21 @@ ClassSchema.statics.addTeacher = function(classId, teacherId) {
                 err => errFilter(err, '添加教师失败')
               )
 }
+ClassSchema.statics.delete = function(classId) {
+  return Class.findById(classId)
+              .then(classData => classData.beforeDeleteClass())
+              .then(classData => Class.remove({_id: classData._id}))
+              .then(
+                removeResult => {
+                  if (removeResult.result.ok == 1 && removeResult.result.n == 1) {
+                    return Promise.resolve('成功删除班级');
+                  } else {
+                    return Promise.reject('删除班级失败,该班级不存在')
+                  }
+                },
+                err => errFilter(err, '删除班级失败')
+              )
+}
 //-------------------------------------------------------------------
 
 //Group--------------------------------------------------------------
@@ -160,6 +194,21 @@ GroupSchema.methods.updateProperty = function(updater) {
     this[key] = updater[key];
   }
   return Promise.resolve(this);
+}
+GroupSchema.methods.beforeDeleteGroup = function() {
+  var membersId = [];
+  membersId = membersId.concat(this.studentsId);
+  membersId = membersId.concat(this.assistantsId);
+  membersData = membersId.map(
+    memberId => User.findById(memberId)
+                    .then(memberData => memberData.updateProperty({groupId: null}))
+                    .then(memberData => memberData.save())
+  );
+  return Promise.all(membersData)
+                .then(
+                  () => this,
+                  (err) => errFilter(err, '删除小组失败')
+                )
 }
   //statics
 GroupSchema.statics.findById = function(groupId) {
@@ -239,7 +288,19 @@ GroupSchema.statics.deleteMember = function(groupId, memberId) {
               )
 }
 GroupSchema.statics.delete = function(groupId) {
-  
+  return Group.findById(groupId)
+              .then(groupData => groupData.beforeDeleteGroup())  // So sorry I dont't want to make it commit or rollback
+              .then(groupData => Group.remove({_id: groupData._id}))
+              .then(
+                removeResult => {
+                  if (removeResult.result.ok == 1 && removeResult.result.n == 1) {
+                    return Promise.resolve('成功删除小组');
+                  } else {
+                    return Promise.reject('删除小组失败,该小组不存在')
+                  }
+                },
+                err => errFilter(err, '删除小组失败')
+              )
 }
 //-------------------------------------------------------------------
 
@@ -315,7 +376,7 @@ UserSchema.statics.delete = function (account) {
 	    (removeResult) => {
 	    	if (removeResult.result.ok == 1 && removeResult.result.n == 1) {
 	    		return Promise.resolve('成功删除用户')   //need to delete all the things coresponsed to that user
-	    	} else if (removeResult.result.n == 0) {
+	    	} else {
 	    		return Promise.reject('删除用户失败,该用户不存在')
 	    	}
 	    },
