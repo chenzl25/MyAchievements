@@ -1,0 +1,44 @@
+a {
+  text-decoration: none;
+  cursor: pointer;
+  font-size: 25px;
+}
+#login-form-container,#register-form-container {
+  margin-left: auto;
+  margin-right: auto;
+}
+#register-form, #login-form {
+  legend {
+    font-size: 50px;
+  }
+  width:350px;
+  margin-top: 100px;
+  margin-left: auto;
+  margin-right: auto;
+  label {
+    display: none;
+  }
+  input {
+    font-size: 20px;
+    color: white;
+    width: 350px;
+    height: 40px;
+    display: inline-block;
+    outline: none;
+    background: transparent;
+    border:1px white solid;
+    border-radius: 5px;
+    margin-top: 10px;
+    padding-left: 10px;
+  }
+  input[type="submit"] {
+    letter-spacing: 2px;
+    &:hover {
+      background: #2287B0;
+      border: 1px #ccc solid;
+    }
+  }
+}
+p.message {
+  white-space: pre-wrap;
+}

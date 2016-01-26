@@ -1,0 +1,35 @@
+{
+  "name": "blog-backend",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "start": "node ./bin/www",
+    "debug": "node-inspector & DEBUG=api:* node --debug ./bin/www",
+    "test": "mocha"
+  },
+  "dependencies": {
+    "body-parser": "~1.13.2",
+    "connect-mongo": "^1.1.0",
+    "cookie-parser": "~1.3.5",
+    "debug": "~2.2.0",
+    "express": "~4.13.1",
+    "express-session": "^1.12.1",
+    "gulp-typescript": "^2.10.0",
+    "jade": "~1.11.0",
+    "mongoose": "^4.3.4",
+    "morgan": "~1.6.1",
+    "serve-favicon": "~2.3.0"
+  },
+  "devDependencies": {
+    "chai": "^3.4.1",
+    "chai-http": "^1.0.0",
+    "gulp": "^3.9.0",
+    "gulp-jshint": "^2.0.0",
+    "gulp-mocha": "^2.2.0",
+    "gulp-nodemon": "^2.0.6",
+    "gulp-notify": "^2.2.0",
+    "gulp-watch": "^4.3.5",
+    "jshint": "^2.9.1-rc2",
+    "mocha": "^2.3.4"
+  }
+}

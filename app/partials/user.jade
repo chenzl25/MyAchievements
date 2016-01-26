@@ -1,0 +1,35 @@
+nav
+  ul
+    li 
+      a(href="#home/page/1") 博客主页
+    li   
+      a(href="#user") 用户主页
+div#user-container
+  div#user-left-container
+    div#user-profile-container
+      span.user-name 用户: {{userData.name}}
+    div#user-search-container
+      input(ng-model="search", placeholder="search...")
+    div#user-posts-container
+      ul.user-posts-list
+        li(ng-repeat="postData in userData.posts | filter:search")
+          div.user-post-container(ng-click="enterPostDetail(postData)")
+            h1.post-title {{postData.title}}
+            //- p.post-content {{postData.content}}
+            span.post-last-modified {{postData.lastModified | date:"MM/dd/yyyy 'at' h:mma"}}
+  div#user-right-container
+    div#create-post-container
+      form#create-post-form
+        fieldset
+          div#legand
+            legend Write Blog
+          div.title-container
+            label(for="title", class="attribute-name")
+            input(ng-model="title", id="title", type="text", name="title", placeholder="title")
+          div.content-container
+            label(for="content", class="attribute-name")
+            textarea(ng-model="content", id="content", name="content", placeholder="content...", rows="13", cols="50", form="create-post-form")
+          div.submit-container
+            input(id="submit" type='submit' ng-click="createPost()")
+          div.message-container
+            p(class="message" ng-class="messageClass") {{message}}

@@ -1,0 +1,21 @@
+nav
+  ul
+    li 
+      a(href="#login") 登陆
+    li   
+      a(href="#register")  注册
+div#login-form-container
+  form#login-form
+    fieldset
+      div#legand
+        legend Login
+      div.account-container
+        label(for="account", class="attribute-name")
+        input(ng-model="account", id="account", type="text", name="account", placeholder="account")
+      div.password-container
+        label(for="password", class="attribute-name")
+        input(ng-model="password", id="password", type="password", name="password", placeholder="password")
+      div.submit-container
+        input(id="submit" type='submit',value="login", ng-click="login()")
+      div.message-container
+        p.message(ng-class="messageClass") {{message}}

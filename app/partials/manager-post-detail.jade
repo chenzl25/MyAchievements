@@ -1,0 +1,18 @@
+nav
+  ul
+    li 
+      a(href="#home/page/1") 博客主页
+div#post-container
+  div#post-profile-container
+    button.post-forbidden-switch-button(ng-click="postForbiddenSwitch()" ) {{postData.isForbidden ? '解禁': '禁'}} 
+    span.post-title {{postData.title}}
+    p.post-content {{postData.content}}
+  div#comments-container
+    ul.comments-list
+      li(ng-repeat="commentData in postData.comments")
+        div.comment-container
+          button.comment-forbidden-switch-button(ng-click="commentForbiddenSwitch(commentData._id)" ) {{commentData.isForbidden ? '解禁': '禁'}} 
+          p.comment-content {{commentData.content}}
+          div#comments-bottom-container
+            span.comment-owner-name {{commentData.ownerName}}
+            span.comment-last-modified {{commentData.lastModified | date:"MM/dd/yyyy 'at' h:mma"}}

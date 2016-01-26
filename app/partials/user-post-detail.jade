@@ -1,0 +1,48 @@
+nav
+  ul
+    li 
+      a(href="#home/page/1") 博客主页
+    li   
+      a(href="#user") 用户主页
+div#post-container
+  div#post-profile-container
+    span.post-title(ng-if="!editState") {{postData.title}}
+    button.delete-button(ng-click="deletePost()") delete
+    button.edit-button(ng-click="editStateHandler()", ng-if="!editState&&!postData.isForbidden") edit
+    button.back-button(ng-click="editStateHandler()", ng-if="editState") back
+    p.post-content(ng-if="!editState") {{postData.content}}
+    form#edit-post-form(ng-if="editState")
+        fieldset
+          div#legand
+            legend Edit Blog
+          div.title-container
+            label(for="title", class="attribute-name")
+            input(ng-model="postData.title", id="title", type="text", name="title", placeholder="title")
+          div.content-container
+            label(for="content", class="attribute-name")
+            textarea(ng-model="postData.content", id="content", name="content", placeholder="content...", rows="18", cols="50", form="edit-post-form")
+          div.submit-container
+            input(id="submit" type='submit' ng-click="editPost()")
+          div.message-container
+            p(class="message" ng-class="anotherMessageClass") {{anotherMessage}}
+
+  div#comments-container
+    ul.comments-list
+      li(ng-repeat="commentData in postData.comments")
+        div.comment-container
+          p.comment-content {{commentData.content}}
+          div#comments-bottom-container
+            span.comment-owner-name {{commentData.ownerName}}
+            span.comment-last-modified {{commentData.lastModified | date:"MM/dd/yyyy 'at' h:mma"}}
+  div#create-comment-container
+      form#create-comment-form
+        fieldset
+          div#legand
+            legend Write Comment
+          div.content-container
+            label(for="content", class="attribute-name")
+            textarea(ng-model="content", id="content", name="content", placeholder="content...", rows="3", cols="95", form="create-comment-form")
+          div.submit-container
+            input(id="submit" type='submit' ng-click="createComment()")
+          div.message-container
+            p(class="message" ng-class="messageClass") {{message}}

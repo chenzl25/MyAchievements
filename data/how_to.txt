@@ -1,0 +1,2 @@
+mongoimport --db Posts --collection posts --file posts.json
+mongoimport --db Posts --collection users --file users.json
