@@ -1,5 +1,6 @@
 var debug = require('debug')('api:tools');
 var fs = require('fs');
+var path = require('path');
 module.exports.checkLoginMiddleware = function(req, res, next) {
   if (req.session.userData) {
     next();
@@ -64,4 +65,23 @@ module.exports.validateMiddleware = function(validatorFunc) {
       next();
     }
   }
+}
+
+module.exports.deleteImage = function(imageAddress) {
+  var addr = path.join(__dirname, '..', 'uploads', 'homeworks', imageAddress);
+  return new Promise((resolve, reject) => {
+    fs.unlink(addr, function(err) {
+      if (err) reject(err);
+      else resolve('ok');
+    })
+  });
+}
+module.exports.deleteSource = function(sourceAddress) {
+  var addr = path.join(__dirname, '..', 'uploads', 'homeworks', sourceAddress);
+  return new Promise((resolve, reject) => {
+    fs.unlink(addr, function(err) {
+      if (err) reject(err);
+      else resolve('ok');
+    })
+  });
 }

@@ -25,7 +25,7 @@ var UserSchema = new mongoose.Schema({
   email: {type:String,default: null},
   name: {type: String, default: null},
   position: {type: String, default: null}, // teaccher, student, assistant
-  homeworks: [ObjectId],
+  homeworksId: [ObjectId],
   // classId: {type: ObjectId, default: null},  // only for the teacher, because the teacher don't belong to any group
   // groupId: {type: ObjectId, default: null},  // for student and assistant
   classsId: [ObjectId],
@@ -351,6 +351,10 @@ UserSchema.methods.addClass = function(classId) {
   this.classsId.push(classId);
   return Promise.resolve(this);
 }
+UserSchema.methods.addHomework = function(homeworkId) {
+  this.homeworksId.push(homeworkId);
+  return Promise.resolve(this);
+}
 UserSchema.methods.deleteGroup = function(groupIdToDelete) {
   this.groupsId = this.groupsId.filter(groupId => groupId.toString() != groupIdToDelete.toString())
   return Promise.resolve(this);
@@ -374,6 +378,22 @@ UserSchema.methods.createAssignmentForClass = function(assignmentData) {
                   assignmentData => assignmentData,
                   err => errFilter(err, '创建班级作业失败')
                 )
+}
+UserSchema.methods.checkHomework = function(assignmentId) {
+  var homeworksId = this.homeworksId;
+  var checkResultsPromise = homeworksId.map(homeworkId => 
+    Homework.findById(homeworkId)
+            .then(homeworkData => homeworkData.assignmentId.toString() === assignmentId.toString()? Promise.resolve(homeworkData._id):Promise.resolve('notFind'))
+  )
+  return Promise.all(checkResultsPromise).then(
+    values => {
+      for (var i = 0; i < values.length; i++) {
+        if (values[i] !== 'notFind')
+          return Promise.resolve({exist: true, homeworkId: values[i]})
+      }
+      return Promise.resolve({exist: false, values: values})
+    }
+  )
 }
   // static****
 UserSchema.statics.findById = function(userId) {
@@ -432,6 +452,14 @@ UserSchema.statics.login = function (account, password) {
                 err => Promise.reject('账号或密码错误')  // special we don't use the errFilter
               )
 };
+UserSchema.statics.alreadyLogin = function(account) {
+  return  this.findOne({account:account}, {password:0})
+              .then(userData => detectUserExist(userData))
+              .then(
+                userData => userData,
+                err => Promise.reject('再次登陆失败')
+              )
+}
 UserSchema.statics.delete = function (account) {
     return this.remove({account: account}).then(
 	    (removeResult) => {
@@ -469,7 +497,6 @@ AssignmentSchema.methods.addHomework = function(homeworkId) {
   this.homeworksId.push(homeworkId);
   return Promise.resolve(this);
 }
-
   //statics
 AssignmentSchema.statics.findById = function(assignmentId) {
   return Assignment.findOne({_id: assignmentId})
@@ -498,20 +525,56 @@ AssignmentSchema.statics.delete = function(assignmentId) {
 //-------------------------------------------------------------------
 
 //Homework-----------------------------------------------------------
-HomeworkSchema.statics.findById = function(homeworkID) {
+  //methods
+HomeworkSchema.methods.replaceHomework = function(homeworkData) {
+  this.github = homeworkData.github;
+  this.message = homeworkData.message;
+  tools.deleteImage(this.image).catch(err => debug(err));
+  tools.deleteSource(this.source).catch(err => debug(err));
+  this.image = homeworkData.image;
+  this.source = homeworkData.source;
+  return Promise.resolve(this);
+}
+
+  //statics
+HomeworkSchema.statics.findById = function(homeworkId) {
   return Homework.findOne({_id: homeworkId})
                  .then(homeworkData => detectHomeworkExist(homeworkData));
 }
 HomeworkSchema.statics.create = function(studentId, assignmentId, source, image, github, message) {
   var homework = Homework({ownerId: studentId, assignmentId:assignmentId ,source: source, image: image, github: github, message: message});
-  return Assignment.findById(assignmentId)
-                   .then(assignmentData => assignmentData.addHomework(homework))
-                   .then(assignmentData => assignmentData.save())
-                   .then(() => homework.save())
-                   .then(
-                     homeworkData => homeworkData,
-                     err => errFilter(err, '添加作业失败')
-                   )
+  var outsideStudent;
+  var outsideAssignment
+  return User.findStudentById(studentId)
+             .then(studentData => {
+                outsideStudent = studentData;
+                return Assignment.findById(assignmentId)
+             })
+             .then(assignmentData => {
+               outsideAssignment = assignmentData;
+               return outsideStudent.checkHomework(assignmentData._id)
+             })
+             // .then(v => Promise.reject(v))
+             .then(checkResult => {
+               if(checkResult.exist === true)
+                return Homework.findById(checkResult.homeworkId)
+                               .then(homeworkData => homeworkData.replaceHomework(homework))
+               else if (checkResult.exist === false)
+                return outsideAssignment.addHomework(homework)
+             })
+             // .then(assignmentData => assignmentData.addHomework(homework._id))
+             .then(homeworkOrAssignmentData => homeworkOrAssignmentData.save())
+             .then(() => outsideStudent.addHomework(homework._id))
+             .then(studentData => studentData.save())
+             .then(() => homework.save())
+             .then(
+               homeworkData => homeworkData,
+               err => {
+                tools.deleteSource(source).catch(err => debug(err))  //commit or rollback
+                tools.deleteImage(image).catch(err => debug(err))
+                return errFilter(err, '添加作业失败')
+               }
+             )
 }
 
 //-------------------------------------------------------------------

@@ -39,7 +39,7 @@ var homeworkUpload = multer({
   }),
   limits: {
     fieldNameSize: 10,
-    // fileSize: 512,
+    // fileSize: 512,    //some error in the source file ...
     files:2,
   },
   fileFilter: function  (req, file, cb) {
@@ -59,17 +59,11 @@ var homeworkUpload = multer({
     }
   }
 });
-// fieldname: 'image',
-// originalname: 'abc.png',
-// encoding: '7bit',
-// mimetype: 'image/png',
-// mimetype: 'application/zip',
-// mimetype: 'application/x-bzip2',
-// mimetype: 'application/x-tar'
-// mimetype: 'application/x-rar-compressed'
-// mimetype: 'application/java-archive'
+
 router.use(tools.checkLoginMiddleware);
 router.use(tools.checkStudentMiddleware);
+
+
 router.post('/assignment/:assignmentId/homework', 
 	tools.validateMiddleware(validator.validateCreateHomework.bind(validator)),
 	homeworkUpload.any(), 
@@ -78,17 +72,11 @@ router.post('/assignment/:assignmentId/homework',
 	if (!req.body.source && !req.body.image)
 		res.json({error: true, message: '预览图和源文件都没有上传'})
 	else if (!req.body.source && req.body.image) {
-		fs.unlink(path.join(__dirname, '..', 'uploads', 'homeworks', req.body.image), function(err) {
-	      if (err)
-	        debug(err);
-	      res.json({error: true, message: '源文件没有上传'})
-	  });
+		tools.deleteImage(req.body.image).catch(err => debug(err))
+		res.json({error: true, message: '源文件没有上传'})
 	} else if (req.body.source && !req.body.image) {
-		fs.unlink(path.join(__dirname, '..', 'uploads', 'homeworks', req.body.source), function(err) {
-	      if (err)
-	        debug(err);
-	      res.json({error: true, message: '预览图没有上传'})
-	  });
+		tools.deleteSource(req.body.source).catch(err => debug(err))
+		res.json({error: true, message: '预览图没有上传'})
 	} else
 	  Homework.create(req.session.userData._id, req.params.assignmentId, req.body.source, req.body.image, req.body.github, req.body.message).then(
 	    (homeworkData) => {
@@ -109,6 +97,13 @@ router.get('/assignment/:assignmentId', function(req, res) {
     }
   )
 });
+
+
+
+
+
+
+
 router.use(function(err, req, res, next) {
 	if (err.code == 'LIMIT_FIELD_KEY')
   	res.json({error: true, message:'上传作业的filed过长 '});
@@ -124,3 +119,4 @@ router.use(function(err, req, res, next) {
 
 
 module.exports = router;
+

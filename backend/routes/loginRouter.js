@@ -28,18 +28,19 @@ router.post('/login', tools.validateMiddleware(validator.validateLogin.bind(vali
         res.json({error: true, message: errorMessage});
       }
     );
+  } else {
+    User.login(req.body.account, req.body.password).then(
+      (userData) => {
+    		debug(userData);
+        req.session.userData = userData;
+        res.json({error: false, userData: userData});
+      },
+      (errorMessage) => {
+      	debug(errorMessage);
+        res.json({error: true, message: errorMessage});
+      }
+    );
   }
-  User.login(req.body.account, req.body.password).then(
-    (userData) => {
-  		debug(userData);
-      req.session.userData = userData;
-      res.json({error: false, userData: userData});
-    },
-    (errorMessage) => {
-    	debug(errorMessage);
-      res.json({error: true, message: errorMessage});
-    }
-  );
 });
 
 

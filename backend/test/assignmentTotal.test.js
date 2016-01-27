@@ -3,6 +3,8 @@ var chaiHttp = require('chai-http');
 var expect = chai.expect;
 var server = require('./testServer');
 
+var tools = require('../lib/tools');
+
 var User = require('../database/data').User;
 var Class = require('../database/data').Class;
 var Group = require('../database/data').Group;
@@ -25,6 +27,7 @@ var studentTwoId;
 var assistantOneId;
 var assistantTwoId;
 var assignmentId;
+var homeworkId;
 var wrongId = '56a6d439558937d21b647828';
 
 chai.use(chaiHttp);
@@ -58,7 +61,7 @@ describe('Manager: Register, Login and Post:', function() {
 						.post('/api/login')
 						.send({'account':'444444', 'password':'444444'})
 						.then((res) =>{
-					    expect(res.error).equal(false);
+					    expect(res.body.error).equal(false);
 					    done();
 						});
 				}).catch(function(err) {
@@ -234,7 +237,7 @@ describe('Manager: Register, Login and Post:', function() {
 			.post('/api/login')
 			.send({'account':'222222', 'password':'222222'})
 			.then((res) =>{
-		    expect(res.error).equal(false);
+		    expect(res.body.error).equal(false);
 		    done();
 			});
 	});
@@ -243,7 +246,6 @@ describe('Manager: Register, Login and Post:', function() {
 			.post('/Tapi/assignment')
 			.send({name: 'myAchievement', link:'www.google.com', from:String(1453861720310+2500000), end:String(1453861720310+3000000)})
 			.end(function(err, res) {
-				console.log(res.body);
 				expect(res.body.error).equal(false);
 				assignmentId = res.body.assignmentData._id;
 				done();
@@ -272,7 +274,7 @@ describe('Manager: Register, Login and Post:', function() {
 			.post('/api/login')
 			.send({'account':'888888', 'password':'888888'})
 			.then((res) =>{
-		    expect(res.error).equal(false);
+		    expect(res.body.error).equal(false);
 		    done();
 			});
 	});
@@ -280,32 +282,73 @@ describe('Manager: Register, Login and Post:', function() {
 		agentStudent
 			.post('/Sapi/assignment/'+assignmentId+'/homework')
 			.send({github:'http://github.com/chenzl25'})
-			.attach('source', 'files/14331048.bz2')
-			.attach('image', 'files/abc.png')
+			.attach('source', __dirname+'/files/14331048.bz2')
+			.attach('image', __dirname+'/files/abc.png')
 			.end(function(req, res) {
 				console.log(res.body)
-				expect(res.error).equal(false);
+				expect(res.body.error).equal(false);
 				homeworkId = res.body.homeworkData._id;
+				// tools.deleteImage(res.body.homeworkData.image);  //clean
+				// tools.deleteSource(res.body.homeworkData.source);//clean
 				done();
 			})
 	})
-	it('find the assignment to ensure the homeworkId', function(done) {
+	it('Student replace homework', function(done) {
 		agentStudent
-			.get('/Sapi/assignment/'+assignmentId)
+			.post('/Sapi/assignment/'+assignmentId+'/homework')
+			.send({github:'http://github.com/chenzl25/yacc', message:'lex'})
+			.attach('source', __dirname+'/files/14331048.tar')
+			.attach('image', __dirname+'/files/abc.png')
 			.end(function(req, res) {
-				expect(res.error).equal(false);
-				expect(res.body.assignmentData.homeworksId.indexOf(homeworkId)).not.equal(-1);
+				console.log(res.body)
+				expect(res.body.error).equal(false);
+				homeworkId = res.body.homeworkData._id;
+				// tools.deleteImage(res.body.homeworkData.image);  //clean
+				// tools.deleteSource(res.body.homeworkData.source);//clean
+				done();
 			})
 	})
+	// it('Student login to ensure the homework has been upload', function(done) {
+	// 	agentStudent
+	// 		.post('/api/login')
+	// 		.send({'account':'888888', 'password':'888888'})
+	// 		.then((res) =>{
+	// 	    expect(res.body.error).equal(false);
+	// 	    expect(res.body.userData.homeworksId.indexOf(homeworkId)).not.equal(-1);
+	// 	    done();
+	// 		});
+	// });
+	// it('find the assignment to ensure the homeworkId', function(done) {
+	// 	agentStudent
+	// 		.get('/Sapi/assignment/'+assignmentId)
+	// 		.end(function(req, res) {
+	// 			expect(res.body.error).equal(false);
+	// 			expect(res.body.assignmentData.homeworksId.indexOf(homeworkId)).not.equal(-1);
+	// 			done();
+	// 		})
+	// })
+	// it('Student upload homework', function(done) {
+	// 	agentStudent
+	// 		.post('/Sapi/assignment/'+assignmentId+'/homework')
+	// 		.send({github:'http://github.com/chenzl25'})
+	// 		.attach('source', __dirname+'/files/14331048.bz2')
+	// 		// .attach('image', 'files/abc.png')
+	// 		.end(function(req, res) {
+	// 			expect(res.body.error).equal(true);
+	// 			expect(res.body.message).equal('预览图没有上传')
+	// 			done();
+	// 		})
+	// })
+	// it('Student upload homework', function(done) {
+	// 	agentStudent
+	// 		.post('/Sapi/assignment/'+assignmentId+'/homework')
+	// 		.send({github:'http://github.com/chenzl25'})
+	// 		// .attach('source', __dirname+'/files/14331048.bz2')
+	// 		.attach('image', 'files/abc.png')
+	// 		.end(function(req, res) {
+	// 			expect(res.body.error).equal(true);
+	// 			expect(res.body.message).equal('源文件没有上传')
+	// 			done();
+	// 		})
+	// })
 });
-// describe('upload', function() {
-//     it('a file', function(done) {
-//        request.post('/your/endpoint')
-              // .field('extra_info', '{"in":"case you want to send json along with your file"}')
-//               .attach('image', 'path/to/file.jpg')
-//               .end(function(err, res) {
-//                   res.should.have.status(200); // 'success' status
-//                   done();
-//               });
-//     });
-// });

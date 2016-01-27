@@ -55,7 +55,7 @@ describe('Manager: Register, Login and Post:', function() {
 						.post('/api/login')
 						.send({'account':'444444', 'password':'444444'})
 						.then((res) =>{
-					    expect(res.error).equal(false);
+					    expect(res.body.error).equal(false);
 					    done();
 						});
 				}).catch(function(err) {
