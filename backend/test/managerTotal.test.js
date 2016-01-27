@@ -3,7 +3,13 @@ var chaiHttp = require('chai-http');
 var expect = chai.expect;
 var server = require('./testServer');
 
-var User = require('../database/data.js').User;
+var User = require('../database/data').User;
+var Class = require('../database/data').Class;
+var Group = require('../database/data').Group;
+var Assignment = require('../database/data').Assignment;
+var Homework = require('../database/data').Homework;
+var Review = require('../database/data').Review;
+
 var mongoose = require('mongoose');
 
 var agent;  // use this to the thing needed auth
@@ -18,10 +24,20 @@ chai.use(chaiHttp);
 describe('Manager: Register, Login and Post:', function() {
   before(function(done){
     User.collection.drop();
+    Class.collection.drop();
+    Group.collection.drop();
+    Assignment.collection.drop();
+    Homework.collection.drop();
+    Review.collection.drop();
     done();
   });
   after(function(done){
     User.collection.drop();
+    Class.collection.drop();
+    Group.collection.drop();
+    Assignment.collection.drop();
+    Homework.collection.drop();
+    Review.collection.drop();
     done();
   });
 	it('register only by name', function(done) {
@@ -235,6 +251,7 @@ describe('Manager: Register, Login and Post:', function() {
 				expect(res.body.error).equal(false);
 				expect(res.body.groupData).to.be.a('object');
 				expect(res.body.groupData).to.has.property('_id');
+				expect(res.body.groupData.classId).equal(classId);
 				groupId = res.body.groupData._id;
 				done();
 			});
@@ -268,7 +285,7 @@ describe('Manager: Register, Login and Post:', function() {
 			.get('/Mapi/user/'+teacherId)
 			.end(function(err, res) {
 				expect(res.body.error).equal(false);
-				expect(res.body.userData.classId).equal(classId);
+				expect(res.body.userData.classsId.indexOf(classId)).not.equal(-1);
 				done();
 			});
 	});
@@ -296,7 +313,6 @@ describe('Manager: Register, Login and Post:', function() {
 		agent
 			.post('/Mapi/group/'+groupId+'/assistant/'+assistantId)
 			.end(function(err, res) {
-				console.log(res.body)
 				expect(res.body.error).equal(false);
 				expect(res.body.groupData.assistantsId).to.has.length(1);
 				done();
@@ -307,7 +323,7 @@ describe('Manager: Register, Login and Post:', function() {
 			.get('/Mapi/user/'+studentId)
 			.end(function(err, res) {
 				expect(res.body.error).equal(false);
-				expect(res.body.userData.groupId).equal(groupId);
+				expect(res.body.userData.groupsId.indexOf(groupId)).not.equal(-1);
 				done();
 			});
 	});
@@ -321,12 +337,12 @@ describe('Manager: Register, Login and Post:', function() {
 				done();
 			});
 	});
-	it('search teacher to validate his class is correct', function(done) {
+	it('search student who has been deleted from a group', function(done) {
 		agent
 			.get('/Mapi/user/'+studentId)
 			.end(function(err, res) {
 				expect(res.body.error).equal(false);
-				expect(res.body.userData.groupId).equal(null);
+				expect(res.body.userData.groupsId.indexOf(groupId)).equal(-1);
 				done();
 			});
 	});
@@ -334,7 +350,6 @@ describe('Manager: Register, Login and Post:', function() {
 		agent
 			.delete('/Mapi/group/'+groupId+'/member/'+assistantId)
 			.end(function(err, res) {
-				console.log(res.body)
 				expect(res.body.error).equal(false);
 				expect(res.body.groupData).to.be.a('object');
 				expect(res.body.groupData.assistantsId.indexOf(assistantId)).equal(-1);
@@ -354,7 +369,6 @@ describe('Manager: Register, Login and Post:', function() {
 		agent
 			.post('/Mapi/group/'+groupId+'/assistant/'+assistantId)
 			.end(function(err, res) {
-				console.log(res.body)
 				expect(res.body.error).equal(false);
 				expect(res.body.groupData.assistantsId).to.has.length(1);
 				done();
@@ -373,7 +387,19 @@ describe('Manager: Register, Login and Post:', function() {
 			.get('/Mapi/user/'+studentId)
 			.end(function(err, res) {
 				expect(res.body.error).equal(false);
-				expect(res.body.userData.groupId).equal(groupId);
+				expect(res.body.userData.groupsId.indexOf(groupId)).not.equal(-1);
+				done();
+			});
+	});
+	it('create group ', function(done) {
+		agent
+			.post('/Mapi/class/'+classId+'/group')
+			.send({name:'group456'})
+			.end(function(err, res) {
+				expect(res.body.error).equal(false);
+				expect(res.body.groupData).to.be.a('object');
+				expect(res.body.groupData).to.has.property('_id');
+				expect(res.body.groupData.classId).equal(classId);
 				done();
 			});
 	});
@@ -381,7 +407,19 @@ describe('Manager: Register, Login and Post:', function() {
 		agent
 			.delete('/Mapi/group/'+groupId)
 			.end(function(err, res) {
+				console.log(res.body)
 				expect(res.body.error).equal(false);
+				done();
+			});
+	});
+	it('search class to ensure the group has been deleted', function(done) {
+		agent
+			.get('/Mapi/class/'+classId)
+			.end(function(err, res) {
+				console.log(res.body)
+				expect(res.body.error).equal(false);
+				expect(res.body.classData.groupsId.indexOf(groupId)).equal(-1);
+
 				done();
 			});
 	});
@@ -389,7 +427,6 @@ describe('Manager: Register, Login and Post:', function() {
 		agent
 			.get('/Mapi/group/'+groupId)
 			.end(function(err, res) {
-				console.log(res.body)
 				expect(res.body.error).equal(true);
 				done();
 			});
@@ -399,7 +436,7 @@ describe('Manager: Register, Login and Post:', function() {
 			.get('/Mapi/user/'+studentId)
 			.end(function(err, res) {
 				expect(res.body.error).equal(false);
-				expect(res.body.userData.groupId).equal(null);
+				expect(res.body.userData.groupsId.indexOf(groupId)).equal(-1);
 				done();
 			});
 	});
@@ -408,7 +445,7 @@ describe('Manager: Register, Login and Post:', function() {
 			.get('/Mapi/user/'+assistantId)
 			.end(function(err, res) {
 				expect(res.body.error).equal(false);
-				expect(res.body.userData.groupId).equal(null);
+				expect(res.body.userData.groupsId.indexOf(groupId)).equal(-1);
 				done();
 			});
 	});

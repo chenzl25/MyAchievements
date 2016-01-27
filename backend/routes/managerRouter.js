@@ -6,9 +6,13 @@ var debug = require('debug')('api:manager');
 //self
 var tools = require('../lib/tools');
 var validator = require('../lib/validator');
+
 var User = require('../database/data').User;
 var Class = require('../database/data').Class;
 var Group = require('../database/data').Group;
+var Assignment = require('../database/data').Assignment;
+var Homework = require('../database/data').Homework;
+var Review = require('../database/data').Review;
 
 var express = require('express');
 var router = express.Router();

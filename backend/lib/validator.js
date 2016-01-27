@@ -44,6 +44,36 @@ var validator = {
 			errorMessage: '小组名字长度为2-20个字符',
 			emptyMessage: '小组名字为空',
 			pattern: /^.{2,20}$/
+		},
+		assignmentName: {
+			errorMessage: '班级作业名字长度为2-30个字符',
+			emptyMessage: '班级作业名字为空',
+			pattern: /^.{2,30}$/
+		},
+		assignmentLink: {
+			errorMessage: '班级作业链接长度为2-250个字符',
+			emptyMessage: '班级作业链接为空',
+			pattern: /^.{2,250}$/
+		},
+		assignmentEnd: {
+			errorMessage: '班级作业的结束提交时间戳长度为13个数字',
+			emptyMessage: '班级作业的结束提交时间戳为空',
+			pattern: /^[0-9]{13}$/
+		},
+		assignmentFrom: {
+			errorMessage: '班级作业的开始提交时间戳长度为13个数字',
+			emptyMessage: '班级作业的开始提交时间戳为空',
+			pattern: /^[0-9]{13}$/
+		},
+		homeworkMessage: {
+			errorMessage: '提交作业的附言长度为2-250个字符',
+			emptyMessage: '',
+			pattern: /^.{2,250}$/
+		},
+		homeworkGithub: {
+			errorMessage: '提交作业的github链接长度为2-250个字符',
+			emptyMessage: '',
+			pattern: /^.{2,250}$/
 		}
 	},
 	_validate: function(mapper) {
@@ -53,7 +83,8 @@ var validator = {
 				if(!this.beChecked[key].pattern.test(mapper[key]))
 					result.push(this.beChecked[key].errorMessage);
 			} else {
-				result.push(this.beChecked[key].emptyMessage);
+				if (this.beChecked[key].emptyMessage)
+					result.push(this.beChecked[key].emptyMessage);
 			}
 		}
 		if (result.length == 0)
@@ -74,6 +105,12 @@ var validator = {
 	},
 	validateCreateGroup: function(input) {
 		return this._validate({groupName: input.name});
+	},
+	validateCreateAssignment: function(input) {
+		return this._validate({assignmentName: input.name, assignmentLink: input.link, assignmentFrom: input.from, assignmentEnd: input.end})
+	},
+	validateCreateHomework: function(input) {
+		return this._validate({homeworkMessage: input.message, homeworkGithub: input.github});
 	},
 	validatePost: function(input) {
 		return this._validate({postTitle: input.title, postContent: input.content});

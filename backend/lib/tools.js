@@ -1,5 +1,5 @@
 var debug = require('debug')('api:tools');
-
+var fs = require('fs');
 module.exports.checkLoginMiddleware = function(req, res, next) {
   if (req.session.userData) {
     next();
@@ -11,10 +11,31 @@ module.exports.checkManagerMiddleware = function (req, res, next) {
   if (req.session.userData.position == 'manager') {
     next();
   } else {
-    res.json({error:true, message: '你权限不够'});
+    res.json({error:true, message: '你不是管理员'});
   }
 }
 
+module.exports.checkTeacherMiddleware = function (req, res, next) {
+  if (req.session.userData.position == 'teacher') {
+    next();
+  } else {
+    res.json({error:true, message: '你不是教师'});
+  }
+}
+module.exports.checkStudentMiddleware = function (req, res, next) {
+  if (req.session.userData.position == 'student') {
+    next();
+  } else {
+    res.json({error:true, message: '你不是学生'});
+  }
+}
+module.exports.checkAssistantMiddleware = function (req, res, next) {
+  if (req.session.userData.position == 'assistant') {
+    next();
+  } else {
+    res.json({error:true, message: '你不是助教'});
+  }
+}
 module.exports.invalidDataHandler = function (err) {
     // err is our ValidationError object
     // err.errors.password is a ValidatorError object

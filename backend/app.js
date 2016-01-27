@@ -9,8 +9,10 @@ var MongoStore = require('connect-mongo')(session);
 var tools = require('./lib/tools');
 var config = require('./config');
 var loginRouter = require('./routes/loginRouter');
-var userPostRouter = require('./routes/userPostRouter');
-var managerPostRouter = require('./routes/managerPostRouter');
+var studentRouter = require('./routes/studentRouter');
+var assistantRouter = require('./routes/assistantRouter');
+var teacherRouter = require('./routes/teacherRouter');
+var managerRouter = require('./routes/managerRouter');
 var indexRouter = require('./routes/indexRouter');
 
 
@@ -42,14 +44,16 @@ app.use(session({
   cookie: { maxAge: 1800000 },
   store: new MongoStore({
     url: config.url_sessions,
-    ttl: 1800*3 // = 30 minutes. Default
+    ttl: 1800 // = 30 minutes. Default
   }),
 }));
 
 // app.use('/', indexRouter);
+app.use('/Mapi', managerRouter);
 app.use('/api', loginRouter);
-app.use('/Mapi', managerPostRouter);
-app.use('/api', userPostRouter);
+app.use('/Sapi', studentRouter);
+app.use('/Aapi', assistantRouter);
+app.use('/Tapi', teacherRouter);
 // app.get('*', indexRouter);
 
 
