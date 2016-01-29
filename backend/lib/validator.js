@@ -74,6 +74,16 @@ var validator = {
 			errorMessage: '提交作业的github链接长度为2-250个字符',
 			emptyMessage: '',
 			pattern: /^.{2,250}$/
+		},
+		reviewMessage: {
+			errorMessage: '评审的内容长度为50-500个字符',
+			emptyMessage: '评审内容为空',
+			pattern: /^.{50,500}$/
+		},
+		reviewScore:{
+			errorMessage: '评审的分数为0-100',
+			emptyMessage: '评审分数为空',
+			pattern: /(^100$)|^([1-9]{0,1}[0-9]{1}$)/
 		}
 	},
 	_validate: function(mapper) {
@@ -112,11 +122,11 @@ var validator = {
 	validateCreateHomework: function(input) {
 		return this._validate({homeworkMessage: input.message, homeworkGithub: input.github});
 	},
-	validatePost: function(input) {
-		return this._validate({postTitle: input.title, postContent: input.content});
+	validateUpdateHomework: function(input) {
+		return this.validateCreateHomework(input);
 	},
-	validateComment: function(input) {
-		return this._validate({commentContent: input.content});
-	},
+	validateCreateReview: function(input) {
+		return this._validate({reviewMessage: input.message, reviewScore: input.score});
+	}
 };
 module.exports = validator;

@@ -33,62 +33,61 @@ router.use(tools.checkTeacherMiddleware);
 router.post('/assignment', tools.validateMiddleware(validator.validateCreateAssignment.bind(validator)), function(req, res) {
 	debug(req.body);
   Assignment.create(req.session.userData._id, req.body.name, req.body.link, req.body.from, req.body.end).then(
-    (assignmentData) => {
-      res.json({error: false, assignmentData:assignmentData});
-    },
-    (errorMessage) => {
-      res.json({error: true, message: errorMessage});
-    }
+    assignmentData => res.json({error: false, assignmentData:assignmentData}),
+    errorMessage => res.json({error: true, message: errorMessage})
   );
 })
 router.delete('/assignment/:assignmentId', function(req, res) {
   Assignment.delete(assignmentId).then(
-    (successMessage) => {
-      res.json({error: false, message:successMessage});
-    },
-    (errorMessage) => {
-      res.json({error: true, message: errorMessage});
-    }
+    successMessage => res.json({error: false, message:successMessage}),
+    errorMessage => res.json({error: true, message: errorMessage})
   );
 })
 router.get('/user/:userId', function(req, res) {
   User.findById(req.params.userId).then(
-    (userData) => {
-      res.json({error:false, userData: userData});
-    },
-    (errorMessage) => {
-      res.json({error: true, message: errorMessage});
-    }
+    userData => res.json({error:false, userData: userData}),
+    errorMessage => res.json({error: true, message: errorMessage})
   )
 })
 router.get('/class/:classId', function(req, res) {
   Class.findById(req.params.classId).then(
-    (classData) => {
-      res.json({error: false, classData: classData});
-    },
-    (errorMessage) => {
-      res.json({error: true, message: errorMessage});
-    }
+    classData => res.json({error: false, classData: classData}),
+    errorMessage => res.json({error: true, message: errorMessage})
   )
 });
 router.get('/group/:groupId', function(req, res) {
   Group.findById(req.params.groupId).then(
-    (groupData) => {
-      res.json({error: false, groupData: groupData});
-    },
-    (errorMessage) => {
-      res.json({error: true, message: errorMessage});
-    }
+    groupData => res.json({error: false, groupData: groupData}),
+    errorMessage => res.json({error: true, message: errorMessage})
   )
 });
 router.get('/assignment/:assignmentId', function(req, res) {
   Assignment.findById(req.params.assignmentId).then(
-    (assignmentId) => {
-      res.json({error: false, assignmentId: assignmentId});
-    },
-    (errorMessage) => {
-      res.json({error: true, message: errorMessage});
-    }
+    assignmentData => res.json({error: false, assignmentData: assignmentData}),
+    errorMessage => res.json({error: true, message: errorMessage})
   )
 });
+router.get('/homework/:homeworkId', function(req, res) {
+  Homework.findById(req.params.homeworkId).then(
+    homeworkData => res.json({error: false, homeworkData: homeworkData}),
+    errorMessage => res.json({error: true, message: errorMessage})
+  )
+});
+router.post('/homework/:homeworkId/finalReview', 
+  tools.validateMiddleware(validator.validateCreateReview.bind(validator)),
+  function(req, res) {
+  debug(req.body);
+  Homework.teacherFinalReview(req.params.homeworkId, req.body.message, req.body.score).then(
+    homeworkData => res.json({error: false, homeworkData:homeworkData}),
+    errorMessage => res.json({error: true, message: errorMessage})
+  );
+})
+router.put('/assignment/:assignmentId/rank', function(req, res) {
+  Assignment.getRank(req.params.assignmentId).then(
+    successMessage => res.json({error: false, successMessage:successMessage}),
+    errorMessage => res.json({error: true, message: errorMessage})
+  )
+})
+
+
 module.exports = router;

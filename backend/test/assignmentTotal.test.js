@@ -1,3 +1,4 @@
+'use strict';
 var chai = require('chai');
 var chaiHttp = require('chai-http');
 var expect = chai.expect;
@@ -17,9 +18,14 @@ var mongoose = require('mongoose');
 var agentManager;  // use this to the thing needed auth
 var agentTeacher;
 var agentStudent;
+var agentAssistant;
 var classId; 
 var groupOneId;
 var groupTwoId;
+var groupsId = [];
+var testReviewStudentsId = [];
+var toReviewGroupsId = [];
+var indexOfReviewGroupInOriginGroup = [];
 var teacherOneId;
 var teacherTwoId
 var studentOneId;
@@ -28,6 +34,8 @@ var assistantOneId;
 var assistantTwoId;
 var assignmentId;
 var homeworkId;
+var homeworksId = [];
+var agentStudents = [];
 var wrongId = '56a6d439558937d21b647828';
 
 chai.use(chaiHttp);
@@ -71,7 +79,7 @@ describe('Manager: Register, Login and Post:', function() {
 	it('register successfully', function(done) {
 		agentManager
 				.post('/Mapi/register')
-				.send({'account':'222222', 'password':'222222', 'name':'KKKKK', 'email':"kkkkk@qq.com", 'position':"teacher"})
+				.send({'account':'teacher1', 'password':'teacher1', 'name':'KKKKK', 'email':"kkkkk@qq.com", 'position':"teacher"})
 				.end(function(err, res) {
 					expect(res.body.error).equal(false);
 					expect(res.body.userData).to.be.a('object');
@@ -82,7 +90,7 @@ describe('Manager: Register, Login and Post:', function() {
 	it('register successfully', function(done) {
 		agentManager
 				.post('/Mapi/register')
-				.send({'account':'aaaaaa', 'password':'222222a', 'name':'KKKKK', 'email':"kkkkk@qq.com", 'position':"teacher"})
+				.send({'account':'teacher2', 'password':'teacher2', 'name':'KKKKK', 'email':"kkkkk@qq.com", 'position':"teacher"})
 				.end(function(err, res) {
 					expect(res.body.error).equal(false);
 					expect(res.body.userData).to.be.a('object');
@@ -93,7 +101,7 @@ describe('Manager: Register, Login and Post:', function() {
 	it('register successfully', function(done) {
 		agentManager
 				.post('/Mapi/register')
-				.send({'account':'888888', 'password':'888888', 'name':'dylan', 'email':"595084778@qq.com", 'position':"student"})
+				.send({'account':'0000000', 'password':'0000000', 'name':'dylan', 'email':"595084778@qq.com", 'position':"student"})
 				.end(function(err, res) {
 					expect(res.body.error).equal(false);
 					expect(res.body.userData).to.be.a('object');
@@ -104,7 +112,7 @@ describe('Manager: Register, Login and Post:', function() {
 	it('register successfully', function(done) {
 		agentManager
 				.post('/Mapi/register')
-				.send({'account':'bbbbbb', 'password':'888888', 'name':'dylan', 'email':"595084778@qq.com", 'position':"student"})
+				.send({'account':'1111111', 'password':'1111111', 'name':'dylan', 'email':"595084778@qq.com", 'position':"student"})
 				.end(function(err, res) {
 					expect(res.body.error).equal(false);
 					expect(res.body.userData).to.be.a('object');
@@ -112,10 +120,10 @@ describe('Manager: Register, Login and Post:', function() {
 					done();
 				});
 	});
-	it('register successfully', function(done) {
+	it('register assistant successfully', function(done) {
 		agentManager
 				.post('/Mapi/register')
-				.send({'account':'999999', 'password':'999999', 'name':'tata', 'email':"tatata@qq.com", 'position':"assistant"})
+				.send({'account':'assistant1', 'password':'assistant1', 'name':'tata', 'email':"tatata@qq.com", 'position':"assistant"})
 				.end(function(err, res) {
 					expect(res.body.error).equal(false);
 					expect(res.body.userData).to.be.a('object');
@@ -123,10 +131,10 @@ describe('Manager: Register, Login and Post:', function() {
 					done();
 				});
 	});
-	it('register successfully', function(done) {
+	it('register assistant successfully', function(done) {
 		agentManager
 				.post('/Mapi/register')
-				.send({'account':'cccccc', 'password':'999999', 'name':'tata', 'email':"tatata@qq.com", 'position':"assistant"})
+				.send({'account':'assistant2', 'password':'assistant2', 'name':'tata', 'email':"tatata@qq.com", 'position':"assistant"})
 				.end(function(err, res) {
 					expect(res.body.error).equal(false);
 					expect(res.body.userData).to.be.a('object');
@@ -153,6 +161,7 @@ describe('Manager: Register, Login and Post:', function() {
 				expect(res.body.groupData).to.be.a('object');
 				expect(res.body.groupData).to.has.property('_id');
 				groupOneId = res.body.groupData._id;
+				groupsId.push(res.body.groupData._id)
 				done();
 			});
 	});
@@ -166,6 +175,7 @@ describe('Manager: Register, Login and Post:', function() {
 				expect(res.body.groupData).to.be.a('object');
 				expect(res.body.groupData).to.has.property('_id');
 				groupTwoId = res.body.groupData._id;
+				groupsId.push(res.body.groupData._id)
 				done();
 			});
 	});
@@ -201,6 +211,7 @@ describe('Manager: Register, Login and Post:', function() {
 			.end(function(err, res) {
 				expect(res.body.error).equal(false);
 				expect(res.body.groupData.studentsId).to.has.length(1);
+				testReviewStudentsId.push(studentOneId)
 				done();
 			});
 	});
@@ -210,6 +221,7 @@ describe('Manager: Register, Login and Post:', function() {
 			.end(function(err, res) {
 				expect(res.body.error).equal(false);
 				expect(res.body.groupData.studentsId).to.has.length(1);
+				testReviewStudentsId.push(studentTwoId)
 				done();
 			});
 	});
@@ -235,19 +247,211 @@ describe('Manager: Register, Login and Post:', function() {
 		agentTeacher = chai.request.agent(server);
 		agentTeacher
 			.post('/api/login')
-			.send({'account':'222222', 'password':'222222'})
+			.send({'account':'teacher1', 'password':'teacher1'})
 			.then((res) =>{
 		    expect(res.body.error).equal(false);
 		    done();
 			});
 	});
+	it('create group ', function(done) {
+		agentManager
+			.post('/Mapi/class/'+classId+'/group')
+			.send({name:'group789'})
+			.then((res) => {
+				expect(res.body.error).equal(false);
+				expect(res.body.groupData).to.be.a('object');
+				expect(res.body.groupData).to.has.property('_id');
+				groupsId.push(res.body.groupData._id)
+				done();
+			});
+	});
+	it('create group ', function(done) {
+		agentManager
+			.post('/Mapi/class/'+classId+'/group')
+			.send({name:'group789'})
+			.end(function(err, res) {
+				expect(res.body.error).equal(false);
+				expect(res.body.groupData).to.be.a('object');
+				expect(res.body.groupData).to.has.property('_id');
+				groupsId.push(res.body.groupData._id)
+				done();
+			})
+	});
+	it('create group ', function(done) {
+		agentManager
+			.post('/Mapi/class/'+classId+'/group')
+			.send({name:'group789'})
+			.end(function(err, res) {
+				expect(res.body.error).equal(false);
+				expect(res.body.groupData).to.be.a('object');
+				expect(res.body.groupData).to.has.property('_id');
+				groupsId.push(res.body.groupData._id)
+				done();
+			});
+	});
+	it('create group ', function(done) {
+		agentManager
+			.post('/Mapi/class/'+classId+'/group')
+			.send({name:'group789'})
+			.end(function(err, res) {
+				expect(res.body.error).equal(false);
+				expect(res.body.groupData).to.be.a('object');
+				expect(res.body.groupData).to.has.property('_id');
+				groupsId.push(res.body.groupData._id)
+				done();
+			});
+	});
+	
+	it('register student successfully', function(done) {
+		agentManager
+			.post('/Mapi/register')
+			.send({'account':'2222222', 'password':'2222222', 'name':'aaa', 'email':"kkkkk@qq.com", 'position':"student"})
+			.end(function(err, res) {
+				expect(res.body.error).equal(false);
+				expect(res.body.userData).to.be.a('object');
+				testReviewStudentsId.push(res.body.userData._id);
+				done();
+			});
+	});
+	it('add student to group', function(done) {
+		agentManager
+			.post('/Mapi/group/'+groupsId[2] + '/student/'+testReviewStudentsId[2])
+			.end(function(err, res) {
+				expect(res.body.error).equal(false);
+				done();
+			})
+	})
+	it('register student successfully', function(done) {
+		agentManager
+			.post('/Mapi/register')
+			.send({'account':'3333333', 'password':'3333333', 'name':'bbb', 'email':"kkkkk@qq.com", 'position':"student"})
+			.end(function(err, res) {
+				expect(res.body.error).equal(false);
+				expect(res.body.userData).to.be.a('object');
+				testReviewStudentsId.push(res.body.userData._id);
+				done();
+			});
+	});
+	it('add student to group', function(done) {
+		agentManager
+			.post('/Mapi/group/'+groupsId[3] + '/student/'+testReviewStudentsId[3])
+			.end(function(err, res) {
+				expect(res.body.error).equal(false);
+				done();
+			})
+	})
+	it('register student successfully', function(done) {
+		agentManager
+			.post('/Mapi/register')
+			.send({'account':'4444444', 'password':'4444444', 'name':'ccc', 'email':"kkkkk@qq.com", 'position':"student"})
+			.end(function(err, res) {
+				expect(res.body.error).equal(false);
+				expect(res.body.userData).to.be.a('object');
+				testReviewStudentsId.push(res.body.userData._id);
+				done();
+			});
+	});
+	it('add student to group', function(done) {
+		agentManager
+			.post('/Mapi/group/'+groupsId[4] + '/student/'+testReviewStudentsId[4])
+			.end(function(err, res) {
+				expect(res.body.error).equal(false);
+				done();
+			})
+	})
+	it('register student successfully', function(done) {
+		agentManager
+			.post('/Mapi/register')
+			.send({'account':'5555555', 'password':'5555555', 'name':'ddd', 'email':"kkkkk@qq.com", 'position':"student"})
+			.end(function(err, res) {
+				expect(res.body.error).equal(false);
+				expect(res.body.userData).to.be.a('object');
+				testReviewStudentsId.push(res.body.userData._id);
+				done();
+			});
+	});
+	it('add student to group', function(done) {
+		agentManager
+			.post('/Mapi/group/'+groupsId[5] + '/student/'+testReviewStudentsId[5])
+			.end(function(err, res) {
+				expect(res.body.error).equal(false);
+				done();
+			})
+	})
+	
 	it('teacher add assignment', function(done) {
 		agentTeacher
 			.post('/Tapi/assignment')
-			.send({name: 'myAchievement', link:'www.google.com', from:String(1453861720310+2500000), end:String(1453861720310+3000000)})
+			.send({name: 'myAchievement', link:'www.google.com', from:String(1453861720310+2500000), end:String(1453861720310+3000000000)})
 			.end(function(err, res) {
 				expect(res.body.error).equal(false);
 				assignmentId = res.body.assignmentData._id;
+				done();
+			});
+	});
+	it('teacher search group ensure the toReviewGroup normally', function(done) {
+		agentTeacher
+			.get('/Tapi/group/'+groupsId[0])
+			.send({name: 'myAchievement', link:'www.google.com', from:String(1453861720310+2500000), end:String(1453861720310+3000000000)})
+			.end(function(err, res) {
+				expect(res.body.error).equal(false);
+				expect(res.body.groupData.toReviewGroupId).not.equal(groupsId[0])
+				toReviewGroupsId.push(res.body.groupData.toReviewGroupId)
+				done();
+			});
+	});
+	it('teacher search group ensure the toReviewGroup normally', function(done) {
+		agentTeacher
+			.get('/Tapi/group/'+groupsId[1])
+			.send({name: 'myAchievement', link:'www.google.com', from:String(1453861720310+2500000), end:String(1453861720310+3000000000)})
+			.end(function(err, res) {
+				expect(res.body.error).equal(false);
+				expect(res.body.groupData.toReviewGroupId).not.equal(groupsId[1])
+				toReviewGroupsId.push(res.body.groupData.toReviewGroupId)
+				done();
+			});
+	});
+	it('teacher search group ensure the toReviewGroup normally', function(done) {
+		agentTeacher
+			.get('/Tapi/group/'+groupsId[2])
+			.send({name: 'myAchievement', link:'www.google.com', from:String(1453861720310+2500000), end:String(1453861720310+3000000000)})
+			.end(function(err, res) {
+				expect(res.body.error).equal(false);
+				expect(res.body.groupData.toReviewGroupId).not.equal(groupsId[2])
+				toReviewGroupsId.push(res.body.groupData.toReviewGroupId)
+				done();
+			});
+	});
+	it('teacher search group ensure the toReviewGroup normally', function(done) {
+		agentTeacher
+			.get('/Tapi/group/'+groupsId[3])
+			.send({name: 'myAchievement', link:'www.google.com', from:String(1453861720310+2500000), end:String(1453861720310+3000000000)})
+			.end(function(err, res) {
+				expect(res.body.error).equal(false);
+				expect(res.body.groupData.toReviewGroupId).not.equal(groupsId[3])
+				toReviewGroupsId.push(res.body.groupData.toReviewGroupId)
+				done();
+			});
+	});
+	it('teacher search group ensure the toReviewGroup normally', function(done) {
+		agentTeacher
+			.get('/Tapi/group/'+groupsId[4])
+			.send({name: 'myAchievement', link:'www.google.com', from:String(1453861720310+2500000), end:String(1453861720310+3000000000)})
+			.end(function(err, res) {
+				expect(res.body.error).equal(false);
+				expect(res.body.groupData.toReviewGroupId).not.equal(groupsId[4])
+				toReviewGroupsId.push(res.body.groupData.toReviewGroupId)
+				done();
+			});
+	});
+	it('teacher search group ensure the toReviewGroup normally', function(done) {
+		agentTeacher
+			.get('/Tapi/group/'+groupsId[5])
+			.send({name: 'myAchievement', link:'www.google.com', from:String(1453861720310+2500000), end:String(1453861720310+3000000000)})
+			.end(function(err, res) {
+				expect(res.body.error).equal(false);
+				expect(res.body.groupData.toReviewGroupId).not.equal(groupsId[5])
+				toReviewGroupsId.push(res.body.groupData.toReviewGroupId)
 				done();
 			});
 	});
@@ -272,7 +476,7 @@ describe('Manager: Register, Login and Post:', function() {
 		agentStudent = chai.request.agent(server);
 		agentStudent
 			.post('/api/login')
-			.send({'account':'888888', 'password':'888888'})
+			.send({'account':'0000000', 'password':'0000000'})
 			.then((res) =>{
 		    expect(res.body.error).equal(false);
 		    done();
@@ -285,70 +489,337 @@ describe('Manager: Register, Login and Post:', function() {
 			.attach('source', __dirname+'/files/14331048.bz2')
 			.attach('image', __dirname+'/files/abc.png')
 			.end(function(req, res) {
-				console.log(res.body)
 				expect(res.body.error).equal(false);
 				homeworkId = res.body.homeworkData._id;
+				homeworksId.push(res.body.homeworkData._id);
 				// tools.deleteImage(res.body.homeworkData.image);  //clean
 				// tools.deleteSource(res.body.homeworkData.source);//clean
 				done();
 			})
 	})
-	it('Student replace homework', function(done) {
+	it('Student update homework', function(done) {
 		agentStudent
-			.post('/Sapi/assignment/'+assignmentId+'/homework')
+			.put('/Sapi/homework/'+homeworkId)
 			.send({github:'http://github.com/chenzl25/yacc', message:'lex'})
 			.attach('source', __dirname+'/files/14331048.tar')
 			.attach('image', __dirname+'/files/abc.png')
 			.end(function(req, res) {
-				console.log(res.body)
 				expect(res.body.error).equal(false);
-				homeworkId = res.body.homeworkData._id;
+				expect(res.body.homeworkData._id).equal(homeworkId)
 				// tools.deleteImage(res.body.homeworkData.image);  //clean
 				// tools.deleteSource(res.body.homeworkData.source);//clean
 				done();
 			})
 	})
-	// it('Student login to ensure the homework has been upload', function(done) {
-	// 	agentStudent
-	// 		.post('/api/login')
-	// 		.send({'account':'888888', 'password':'888888'})
-	// 		.then((res) =>{
-	// 	    expect(res.body.error).equal(false);
-	// 	    expect(res.body.userData.homeworksId.indexOf(homeworkId)).not.equal(-1);
-	// 	    done();
-	// 		});
-	// });
-	// it('find the assignment to ensure the homeworkId', function(done) {
-	// 	agentStudent
-	// 		.get('/Sapi/assignment/'+assignmentId)
-	// 		.end(function(req, res) {
-	// 			expect(res.body.error).equal(false);
-	// 			expect(res.body.assignmentData.homeworksId.indexOf(homeworkId)).not.equal(-1);
-	// 			done();
-	// 		})
-	// })
-	// it('Student upload homework', function(done) {
-	// 	agentStudent
-	// 		.post('/Sapi/assignment/'+assignmentId+'/homework')
-	// 		.send({github:'http://github.com/chenzl25'})
-	// 		.attach('source', __dirname+'/files/14331048.bz2')
-	// 		// .attach('image', 'files/abc.png')
-	// 		.end(function(req, res) {
-	// 			expect(res.body.error).equal(true);
-	// 			expect(res.body.message).equal('预览图没有上传')
-	// 			done();
-	// 		})
-	// })
-	// it('Student upload homework', function(done) {
-	// 	agentStudent
-	// 		.post('/Sapi/assignment/'+assignmentId+'/homework')
-	// 		.send({github:'http://github.com/chenzl25'})
-	// 		// .attach('source', __dirname+'/files/14331048.bz2')
-	// 		.attach('image', 'files/abc.png')
-	// 		.end(function(req, res) {
-	// 			expect(res.body.error).equal(true);
-	// 			expect(res.body.message).equal('源文件没有上传')
-	// 			done();
-	// 		})
-	// })
+	it('Student login to ensure the homework has been upload', function(done) {
+		agentStudent
+			.post('/api/login')
+			.send({'account':'0000000', 'password':'0000000'})
+			.then((res) =>{
+		    expect(res.body.error).equal(false);
+		    expect(res.body.userData.homeworksId.indexOf(homeworkId)).not.equal(-1);
+		    done();
+			});
+	});
+	it('find the assignment to ensure the homeworkId', function(done) {
+		agentStudent
+			.get('/Sapi/assignment/'+assignmentId)
+			.end(function(req, res) {
+				expect(res.body.error).equal(false);
+				expect(res.body.assignmentData.homeworksId.indexOf(homeworkId)).not.equal(-1);
+				done();
+			})
+	})
+	it('Student upload homework', function(done) {
+		agentStudent
+			.post('/Sapi/assignment/'+assignmentId+'/homework')
+			.send({github:'http://github.com/chenzl25'})
+			.attach('source', __dirname+'/files/14331048.bz2')
+			// .attach('image', 'files/abc.png')
+			.end(function(req, res) {
+				expect(res.body.error).equal(true);
+				expect(res.body.message).equal('预览图没有上传')
+				done();
+			})
+	})
+	it('Student upload homework', function(done) {
+		agentStudent
+			.post('/Sapi/assignment/'+assignmentId+'/homework')
+			.send({github:'http://github.com/chenzl25'})
+			// .attach('source', __dirname+'/files/14331048.bz2')
+			.attach('image', __dirname+'/files/abc.png')
+			.end(function(req, res) {
+				expect(res.body.error).equal(true);
+				expect(res.body.message).equal('源文件没有上传')
+				done();
+			})
+	})
+	it('prepare the data to test review', function(done) {
+		for (var i = 0; i < groupsId.length; i++) {
+			indexOfReviewGroupInOriginGroup.push(groupsId.indexOf(toReviewGroupsId[i]))
+		}
+		done();
+	})
+	var agentToReview;
+	it('login the student who review the studentOne', function(done) {
+		var accountChar = indexOfReviewGroupInOriginGroup[0].toString();
+		var account = '';
+		var password = '';
+		for (var i = 0; i < 7; i++)
+			account += accountChar;
+		password = account;
+		agentToReview = chai.request.agent(server);
+		agentToReview
+			.post('/api/login')
+			.send({'account':account, 'password':password})
+			.then((res) =>{
+		    expect(res.body.error).equal(false);
+		    done();
+			});
+	})
+	it('add review, note every only have one student now', function(done) {
+		agentToReview 
+			.post('/Sapi/group/'+groupsId[0]+'/student/'+testReviewStudentsId[0]+'/homework/'+homeworkId+'/review')
+			.send({message:"well done well done well done well done well done well done well done well done well done ", score:"99"})
+			.end(function(err, res) {
+				expect(res.body.error).equal(false);
+				done();
+			})
+	})
+	it('assistant login successfully', function(done) {
+		agentAssistant = chai.request.agent(server);
+		agentAssistant
+			.post('/api/login')
+			.send({'account':'assistant1', 'password':'assistant1'})
+			.then((res) =>{
+		    expect(res.body.error).equal(false);
+		    done();
+			});
+	})
+	it('assistant finalReview successfully', function(done) {
+		agentAssistant
+			.post('/Aapi/group/'+groupsId[0]+'/student/'+testReviewStudentsId[0]+'/homework/'+homeworkId+'/finalReview')
+			.send({message:'messagemessagemessagemessagemessagemessagemessagemessagemessage', score:'85'})
+			.end(function(err, res) {
+				expect(res.body.error).equal(false)
+				done();
+			})
+	})
+	it('teacher finalReview successfully', function(done) {
+		agentTeacher
+			.post('/Tapi/homework/'+homeworkId+'/finalReview')
+			.send({message:'teacherteacherteacherteacherteacherteacherteacherteacher', score:'10'})
+			.end(function(err, res) {
+				expect(res.body.error).equal(false)
+				done();
+			})
+	})
+	it('student login', function(done) {
+		agentStudents.push(chai.request.agent(server))
+		agentStudents[0]
+			.post('/api/login')
+			.send({'account':'0000000', 'password':'0000000'})
+			.then((res) =>{
+		    expect(res.body.error).equal(false);
+		    done();
+			});
+	})
+	it('student login', function(done) {
+		agentStudents.push(chai.request.agent(server))
+		agentStudents[1]
+			.post('/api/login')
+			.send({'account':'1111111', 'password':'1111111'})
+			.then((res) =>{
+		    expect(res.body.error).equal(false);
+		    done();
+			});
+	})
+	it('student login', function(done) {
+		agentStudents.push(chai.request.agent(server))
+		agentStudents[2]
+			.post('/api/login')
+			.send({'account':'2222222', 'password':'2222222'})
+			.then((res) =>{
+		    expect(res.body.error).equal(false);
+		    done();
+			});
+	})
+	it('student login', function(done) {
+		agentStudents.push(chai.request.agent(server))
+		agentStudents[3]
+			.post('/api/login')
+			.send({'account':'3333333', 'password':'3333333'})
+			.then((res) =>{
+		    expect(res.body.error).equal(false);
+		    done();
+			});
+	})
+	it('student login', function(done) {
+		agentStudents.push(chai.request.agent(server))
+		agentStudents[4]
+			.post('/api/login')
+			.send({'account':'4444444', 'password':'4444444'})
+			.then((res) =>{
+		    expect(res.body.error).equal(false);
+		    done();
+			});
+	})
+	it('student login', function(done) {
+		agentStudents.push(chai.request.agent(server))
+		agentStudents[5]
+			.post('/api/login')
+			.send({'account':'5555555', 'password':'5555555'})
+			.then((res) =>{
+		    expect(res.body.error).equal(false);
+		    done();
+			});
+	})
+	for (let i = 1; i < 6; i++)
+		it('student upload homework', function(done) {
+			agentStudents[i]
+				.post('/Sapi/assignment/'+assignmentId+'/homework')
+				.send({github:'http://github.com/chenzl25'})
+				.attach('source', __dirname+'/files/14331048.tar')
+				.attach('image', __dirname+'/files/abc.png')
+				.end(function(req, res) {
+					expect(res.body.error).equal(false);
+					homeworksId.push(res.body.homeworkData._id)
+					done();
+				})
+		})
+	for (let i = 0; i < 5; i++)  // deliberately fot get one to test
+		it('teacher finalReview successfully', function(done) {
+			agentTeacher
+				.post('/Tapi/homework/'+homeworksId[i]+'/finalReview')
+				.send({message:'teacherteacherteacherteacherteacherteacherteacherteacher', score:String(Math.floor(Math.random()*100))})
+				.end(function(err, res) {
+					let homeworkData = res.body.homeworkData
+					expect(res.body.error).equal(false)
+					// console.log(homeworkData.finalScore, homeworkData.classRank, homeworkData.groupRank)
+					done();
+				})
+		})
+	it('calculate the rank fail', function(done) {
+		agentTeacher
+			.put('/Tapi/assignment/'+assignmentId+'/rank')
+			.end(function(err, res) {
+				expect(res.body.error).equal(true)
+				expect(res.body.message).equal('有些作业还没评审')
+				done();
+			})
+	})
+	it('teacher finalReview successfully', function(done) {
+			agentTeacher
+				.post('/Tapi/homework/'+homeworksId[5]+'/finalReview')
+				.send({message:'teacherteacherteacherteacherteacherteacherteacherteacher', score:String(Math.floor(Math.random()*100))})
+				.end(function(err, res) {
+					let homeworkData = res.body.homeworkData
+					expect(res.body.error).equal(false)
+					// console.log(homeworkData.finalScore, homeworkData.classRank, homeworkData.groupRank)
+					done();
+				})
+		})
+	it('calculate the rank successfully', function(done) {
+		agentTeacher
+			.put('/Tapi/assignment/'+assignmentId+'/rank')
+			.end(function(err, res) {
+				expect(res.body.error).equal(false)
+				done();
+			})
+	})
+	for (let i = 0; i < 6; i++)
+		it('teacher finalReview successfully', function(done) {
+			agentTeacher
+				.get('/Tapi/homework/'+homeworksId[i])
+				.end(function(err, res) {
+					let homeworkData = res.body.homeworkData
+					console.log(homeworkData.finalScore, homeworkData.classRank, homeworkData.groupRank)
+					expect(res.body.error).equal(false)
+					done();
+				})
+		})
+	// the GroupRankTest is below
+	var testGroupRankStudentsId = [];
+	var testGroupRankHomeworksId = [];
+	var testGroupRankAgents = [];
+	var testGroupNumber = 20;
+	var testGroupRankResult = [];
+	for(let i = 0; i < testGroupNumber; i++){
+		it('register student successfully', function(done) {
+			agentManager
+				.post('/Mapi/register')
+				.send({'account':'student'+i, 'password':'student'+i, 'name':'aaa', 'email':"kkkkk@qq.com", 'position':"student"})
+				.end(function(err, res) {
+					expect(res.body.error).equal(false);
+					expect(res.body.userData).to.be.a('object');
+					testGroupRankStudentsId.push(res.body.userData._id);
+					done();
+				});
+		});
+		it('add student to group', function(done) {
+			agentManager
+				.post('/Mapi/group/'+groupsId[0] + '/student/'+testGroupRankStudentsId[i])
+				.end(function(err, res) {
+					expect(res.body.error).equal(false);
+					done();
+				})
+		})
+		it('student login', function(done) {
+			testGroupRankAgents.push(chai.request.agent(server))
+			testGroupRankAgents[i]
+				.post('/api/login')
+				.send({'account':'student'+i, 'password':'student'+i})
+				.then((res) =>{
+			    expect(res.body.error).equal(false);
+			    done();
+				});
+		})
+		it('student upload homework', function(done) {
+			testGroupRankAgents[i]
+				.post('/Sapi/assignment/'+assignmentId+'/homework')
+				.send({github:'http://github.com/chenzl25'})
+				.attach('source', __dirname+'/files/14331048.tar')
+				.attach('image', __dirname+'/files/abc.png')
+				.end(function(req, res) {
+					expect(res.body.error).equal(false);
+					testGroupRankHomeworksId.push(res.body.homeworkData._id)
+					done();
+				})
+		})
+		it('teacher finalReview successfully', function(done) {
+			agentTeacher
+				.post('/Tapi/homework/'+testGroupRankHomeworksId[i]+'/finalReview')
+				.send({message:'teacherteacherteacherteacherteacherteacherteacherteacher', score:String(Math.floor(Math.random()*100))})
+				.end(function(err, res) {
+					let homeworkData = res.body.homeworkData
+					expect(res.body.error).equal(false)
+					// console.log(homeworkData.finalScore, homeworkData.classRank, homeworkData.groupRank)
+					done();
+				})
+		})
+	}
+	it('calculate the rank successfully', function(done) {
+		agentTeacher
+			.put('/Tapi/assignment/'+assignmentId+'/rank')
+			.end(function(err, res) {
+				expect(res.body.error).equal(false)
+				done();
+			})
+	})
+	for (let i = 0; i < testGroupNumber; i++)
+		it('teacher finalReview successfully', function(done) {
+			agentTeacher
+				.get('/Tapi/homework/'+testGroupRankHomeworksId[i])
+				.end(function(err, res) {
+					let homeworkData = res.body.homeworkData
+					testGroupRankResult.push([homeworkData.finalScore, homeworkData.classRank, homeworkData.groupRank])
+					expect(res.body.error).equal(false)
+					done();
+				})
+		})
+	it('show the groupRank result', function(done) {
+		console.log(testGroupRankResult)
+		done();
+	})
 });
+

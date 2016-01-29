@@ -15,8 +15,9 @@ var ClassSchema = new mongoose.Schema({
 var GroupSchema = new mongoose.Schema({
   classId: {type: ObjectId, default: null},
   name : {type:String,default: null},
-  assistantsId: [ObjectId],
-  studentsId: [ObjectId]
+  assistantsId: [ObjectId],  // only one assistantsId
+  studentsId: [ObjectId],
+  toReviewGroupId: {type: ObjectId, default: null}
 });
 
 var UserSchema = new mongoose.Schema({
@@ -29,7 +30,7 @@ var UserSchema = new mongoose.Schema({
   // classId: {type: ObjectId, default: null},  // only for the teacher, because the teacher don't belong to any group
   // groupId: {type: ObjectId, default: null},  // for student and assistant
   classsId: [ObjectId],
-  groupsId: [ObjectId],
+  groupsId: [ObjectId],   //student has only one groupsId
 });
 
 var AssignmentSchema = new mongoose.Schema({
@@ -49,12 +50,16 @@ var HomeworkSchema = new mongoose.Schema({
   source: {type:String,default: null}, 
   message: {type:String,default: null},
   image: {type: String, default: null},
-  reviewsId: [ObjectId]
+  reviewsId: [ObjectId],
+  groupRank: {type:String, default: null},
+  classRank: {type:String, default: null},
+  finalScore: {type:String, default: null},
+  finalMessage: {type:String, default: null}
 });
 
 var ReviewSchema = new mongoose.Schema({
   reviewerId: {type: ObjectId, default: null},
-  bereviewerId: {type: ObjectId, default: null},
+  beReviewerId: {type: ObjectId, default: null},
   homeworkId: {type: ObjectId, default: null},
   message: {type: String, default: null},
   score: {type: String, default: null},
@@ -103,6 +108,23 @@ function errFilter(err, finalErrorMessage) {
   finalErrorMessage = err   // use this to debug
   return Promise.reject(finalErrorMessage)
 }
+function letEveryElementInArrayChangeIndex(originArray) {
+  var changedArray = [];
+  for (var i = 0; i < originArray.length; i++)
+    changedArray.push(originArray[i]);
+  while (!judgeArrayWhetherChangeIndexOk(originArray,changedArray))
+    messTheArray(changedArray);
+  return changedArray;
+}
+function judgeArrayWhetherChangeIndexOk(originArray,changedArray) {
+  for (var i = 0; i < originArray.length; i++)
+    if (originArray[i].toString() === changedArray[i].toString())
+      return false;
+  return true;
+}
+function messTheArray(array) {
+  array.sort((a,b) => Math.random()-0.5)
+}
 //-------------------------------------------------------------------
 
 //Class--------------------------------------------------------------
@@ -138,6 +160,22 @@ ClassSchema.methods.deleteGroup = function(groupIdToDelete) {
   this.groupsId = this.groupsId.filter(v => v.toString() != groupIdToDelete.toString());
   return Promise.resolve(this);
 }
+ClassSchema.methods.letGroupReview = function() {
+  if (this.groupsId.length < 2) {
+    return Promise.reject('小组小于2个，无法进行小组间的互改');
+  }
+  var toReviewGroupsId = letEveryElementInArrayChangeIndex(this.groupsId);
+  var groupsDataPromise = this.groupsId.map((groupId, index) => 
+    Group.findById(groupId)
+         .then(groupData => groupData.updateProperty({toReviewGroupId : toReviewGroupsId[index]}))
+         .then(groupData => groupData.save())
+  )
+  return Promise.all(groupsDataPromise)
+                .then(
+                  () => this,
+                  err => errFilter(err, '发布作业失败，因分配批改小组失败')
+                )
+}
   //static
 ClassSchema.statics.findById = function(classId) {
 	return Class.findOne({_id: classId})
@@ -162,7 +200,6 @@ ClassSchema.statics.addTeacher = function(classId, teacherId) {
                 outsideClass = classData;
                 return User.findTeacherById(teacherId);
               })
-              // .then(teacherData => teacherData.updateProperty({classId: outsideClass._id}))
               .then(teacherData => teacherData.addClass(outsideClass._id))
               .then(teacherData => teacherData.save())
               .then(teacherData => {
@@ -189,10 +226,17 @@ ClassSchema.statics.delete = function(classId) {  // I haven't delete the assign
                 err => errFilter(err, '删除班级失败')
               )
 }
+
 //-------------------------------------------------------------------
 
 //Group--------------------------------------------------------------
   //methods
+GroupSchema.methods.updateProperty = function(updater) {
+  for (key in updater) {
+    this[key] = updater[key];
+  }
+  return Promise.resolve(this);
+}
 GroupSchema.methods.deleteMember = function(memberId) {
   this.studentsId = this.studentsId.filter(v => v.toString() != memberId.toString());
   this.assistantsId = this.assistantsId.filter(v => v.toString() != memberId.toString());
@@ -235,6 +279,13 @@ GroupSchema.methods.beforeDeleteGroupWithoutRefreshUpper = function() {  // for 
                   () => this,
                   (err) => errFilter(err, '删除小组失败')
                 )
+}
+GroupSchema.methods.findStudentWhetherInGroup = function(studentId) {
+  var studentsId = this.studentsId;
+  for (var i = 0; i < studentsId.length; i++)
+    if (studentsId[i].toString() === studentId.toString())
+      return Promise.resolve('学生在这个组当中');
+  return Promise.reject('学生不在这个组当中');
 }
   //statics
 GroupSchema.statics.findById = function(groupId) {
@@ -371,6 +422,7 @@ UserSchema.methods.createAssignmentForClass = function(assignmentData) {
     classId => Class.findById(classId)
                     .then(classData => classData.addAssignment(assignmentData._id))
                     .then(classData => classData.save())
+                    .then(classData => classData.letGroupReview())
   )
   return Promise.all(classsDataPromise)
                 .then(() => assignmentData.updateProperty({classsId: classsId}))
@@ -394,6 +446,33 @@ UserSchema.methods.checkHomework = function(assignmentId) {
       return Promise.resolve({exist: false, values: values})
     }
   )
+}
+UserSchema.methods.findHomeworkWhetherInStudent = function(homeworkId) {
+  var homeworksId = this.homeworksId;
+  for (var i = 0; i < homeworksId.length; i++)
+    if (homeworksId[i].toString() === homeworkId.toString())
+      return Promise.resolve('作业在这个学生中')
+  // return Promise.reject(homeworksId)
+  return Promise.reject('作业不在这个学生中')
+}
+UserSchema.methods.findHomeworkByAssignmentID = function(assignmentId) {
+  var homeworksId = this.homeworksId;
+  var homeworksDataPromise = homeworksId.map(homeworkId => 
+    Homework.findById(homeworkId)
+  )
+  return Promise.all(homeworksDataPromise)
+                .then(homeworksData => {
+                  for (var i = 0; i < homeworksData.length; i++)
+                    if (homeworksData[i].assignmentId.toString() === assignmentId.toString())
+                      return Promise.resolve(homeworksData[i])
+                  return Promise.reject('用户居然没找到作业，出错了')
+                })
+}
+UserSchema.methods.whetherInGroup = function(groupId) {
+  for(var i = 0 ; i < this.groupsId.length; i++)
+    if(this.groupsId[i].toString() === groupId.toString())
+      return Promise.resolve('该用户在这小组内')
+  return Promise.reject('该用户不在这小组内')
 }
   // static****
 UserSchema.statics.findById = function(userId) {
@@ -497,6 +576,31 @@ AssignmentSchema.methods.addHomework = function(homeworkId) {
   this.homeworksId.push(homeworkId);
   return Promise.resolve(this);
 }
+AssignmentSchema.methods.calculateAllRank = function() {
+  var homeworksId = this.homeworksId;
+  var homeworksPromise = homeworksId.map(homeworkId => 
+    Homework.findById(homeworkId)
+  )
+  return Promise.all(homeworksPromise)
+                .then(homeworksData => {
+                  if (!homeworksData.every(homeworkData => homeworkData.finalScore !== null))
+                    return Promise.reject('有些作业还没评审')
+                  homeworksData.sort((a,b) => parseInt(b.finalScore) - parseInt(a.finalScore))
+                  var hasClassRankHomeworksDataPromise = homeworksData.map((homeworkData,index) =>
+                    homeworkData.updateProperty({classRank: String(index+1)})
+                                .then(homeworkData => homeworkData.save())
+                  )
+                  return Promise.all(hasClassRankHomeworksDataPromise)
+                })
+                .then(homeworksData => {
+                  var hasGroupRankHomeworksDataPromise = homeworksData.map((homeworkData) =>
+                    homeworkData.getGroupRank()
+                                .then(homeworkData => homeworkData.save())
+                  )
+                  return Promise.all(hasGroupRankHomeworksDataPromise)
+                })
+                .catch(err => errFilter(err, '计算作业排名失败'))
+}
   //statics
 AssignmentSchema.statics.findById = function(assignmentId) {
   return Assignment.findOne({_id: assignmentId})
@@ -508,7 +612,6 @@ AssignmentSchema.statics.findById = function(assignmentId) {
                      err => errFilter(err, '查找班级作业失败')
                    )
 }
-// AssignmentSchema.
 AssignmentSchema.statics.create = function(teacherId ,name, link, from, end) {
   var assignment = Assignment({name: name, link: link,from: from, end: end});
   return User.findTeacherById(teacherId)
@@ -519,6 +622,14 @@ AssignmentSchema.statics.create = function(teacherId ,name, link, from, end) {
                 err => errFilter(err, '创建班级作业失败')
               )
 }
+AssignmentSchema.statics.getRank = function(assignmentId) {
+  return Assignment.findById(assignmentId)
+                   .then(assignmentData => assignmentData.calculateAllRank())
+                   .then(
+                     () => Promise.resolve('计算排名成功'),
+                     err => errFilter(err, '计算排名失败')
+                   )
+} 
 AssignmentSchema.statics.delete = function(assignmentId) {
 
 }
@@ -526,6 +637,12 @@ AssignmentSchema.statics.delete = function(assignmentId) {
 
 //Homework-----------------------------------------------------------
   //methods
+HomeworkSchema.methods.updateProperty = function(updater) {
+  for (key in updater) {
+    this[key] = updater[key];
+  }
+  return Promise.resolve(this);
+}
 HomeworkSchema.methods.replaceHomework = function(homeworkData) {
   this.github = homeworkData.github;
   this.message = homeworkData.message;
@@ -535,7 +652,41 @@ HomeworkSchema.methods.replaceHomework = function(homeworkData) {
   this.source = homeworkData.source;
   return Promise.resolve(this);
 }
-
+HomeworkSchema.methods.addReview = function(reviewId) {
+  this.reviewsId.push(reviewId);
+  return Promise.resolve(this);
+}
+HomeworkSchema.methods.checkAssignmentStateIsPresent = function() {
+  return Assignment.findById(this.assignmentId)
+                   .then(assignmentData => assignmentData.state === 'present'? Promise.resolve(this):Promise.reject('作业已经截止了'));
+}
+// HomeworkSchema.methods.checkWhetherHasRank = function() {
+//   return (this.classRank !== null && this.groupRank !== null)? Promise.resolve(true): Promise.resolve(false)
+// }
+HomeworkSchema.methods.getGroupRank = function() {
+  var assignmentId = this.assignmentId;
+  var homeworkId = this._id;
+  return User.findStudentById(this.ownerId)
+             .then(studentData => Group.findById(studentData.groupsId[0]))
+             .then(groupData => {
+               var studentsId = groupData.studentsId;
+               var homeworksDataPromise = studentsId.map(studentId => {
+                 return User.findStudentById(studentId)
+                            .then(studentData => studentData.findHomeworkByAssignmentID(assignmentId))
+               })
+               return Promise.all(homeworksDataPromise)
+                             .then(homeworksData => {
+                               homeworksData.sort((a,b) => parseInt(b.finalScore) - parseInt(a.finalScore))
+                               for (var i = 0; i < homeworksData.length; i++)
+                                 if (homeworksData[i]._id.toString() === homeworkId.toString())
+                                   return homeworksData[i].updateProperty({groupRank: String(i+1)})
+                               return Promise.reject('居然没找到作业，出错了')
+                             })
+             })  
+}
+HomeworkSchema.methods.ownerIs = function(studentId) {
+  return this.ownerId.toString() === studentId.toString()? Promise.resolve(this):Promise.reject('拥有者错误')
+}
   //statics
 HomeworkSchema.statics.findById = function(homeworkId) {
   return Homework.findOne({_id: homeworkId})
@@ -551,19 +702,18 @@ HomeworkSchema.statics.create = function(studentId, assignmentId, source, image,
                 return Assignment.findById(assignmentId)
              })
              .then(assignmentData => {
+               if (assignmentData.state != 'present')
+                 return Promise.reject('作业不在提交时间段内');
                outsideAssignment = assignmentData;
                return outsideStudent.checkHomework(assignmentData._id)
              })
-             // .then(v => Promise.reject(v))
              .then(checkResult => {
                if(checkResult.exist === true)
-                return Homework.findById(checkResult.homeworkId)
-                               .then(homeworkData => homeworkData.replaceHomework(homework))
+                return Promise.reject('该学生作业已经存在，无法再次提交，应该用更新方法')
                else if (checkResult.exist === false)
-                return outsideAssignment.addHomework(homework)
+                return outsideAssignment.addHomework(homework._id)
              })
-             // .then(assignmentData => assignmentData.addHomework(homework._id))
-             .then(homeworkOrAssignmentData => homeworkOrAssignmentData.save())
+             .then(assignmentData => assignmentData.save())
              .then(() => outsideStudent.addHomework(homework._id))
              .then(studentData => studentData.save())
              .then(() => homework.save())
@@ -576,8 +726,77 @@ HomeworkSchema.statics.create = function(studentId, assignmentId, source, image,
                }
              )
 }
+HomeworkSchema.statics.update = function(studentId, homeworkId, source, image, github, message) {
+  var homework = Homework({ownerId: studentId,source: source, image: image, github: github, message: message});
+  return User.findStudentById(studentId)
+             .then(studentData => {
+                return Homework.findById(homeworkId)
+             })
+             .then(homeworkData => homeworkData.checkAssignmentStateIsPresent())
+             .then(homeworkData => homeworkData.replaceHomework(homework))
+             .then(homeworkData => homeworkData.save())
+             .then(
+               homeworkData => homeworkData,
+               err => {
+                tools.deleteSource(source).catch(err => debug(err))  //commit or rollback
+                tools.deleteImage(image).catch(err => debug(err))
+                return errFilter(err, '更新作业失败')
+               }
+             )
+}
 
+HomeworkSchema.statics.assistantFinalReview = function(assistantId, groupId, studentId, homeworkId, message, score) {
+  return User.findAssistantById(assistantId)
+             .then(assistantData => assistantData.whetherInGroup(groupId))
+             .then(() => User.findStudentById(studentId))
+             .then(studentData => studentData.whetherInGroup(groupId))
+             .then(() => Homework.findById(homeworkId))
+             .then(homeworkData => homeworkData.ownerIs(studentId))
+             .then(homeworkData => homeworkData.updateProperty({finalScore:score,finalMessage:message}))
+             .then(homeworkData => homeworkData.save())
+             .then(
+               homeworkData => homeworkData,
+               err => errFilter(err, '助教最终评审失败')
+             )
+}
+HomeworkSchema.statics.teacherFinalReview = function(homeworkId, message, score) {
+  return Homework.findById(homeworkId)
+                 .then(homeworkData => homeworkData.updateProperty({finalScore:score,finalMessage:message}))
+                 .then(homeworkData => homeworkData.save())
+                 .then(
+                   homeworkData => homeworkData,
+                   err => errFilter(err, '老师最终评审失败')
+                 )
+}
 //-------------------------------------------------------------------
+
+//Review-------------------------------------------------------------
+ReviewSchema.statics.findById = function(reviewId) {
+    return Review.findOne({_id: reviewId})
+                 .then(reviewData => detectReviewExist(reviewData));
+}
+ReviewSchema.statics.create = function(reviewerId, groupId, studentId, homeworkId, message, score) {
+  var outsideHomework;
+  var review = Review({ownerId: reviewerId, beReviewerId: studentId, message: message, score: score, homeworkId: homeworkId})
+  return Group.findById(groupId)
+              .then(groupData => groupData.findStudentWhetherInGroup(studentId))
+              .then(() => User.findStudentById(studentId))
+              .then(studentData => studentData.findHomeworkWhetherInStudent(homeworkId))
+              .then(() => Homework.findById(homeworkId))
+              .then(homeworkData => homeworkData.checkAssignmentStateIsPresent())
+              .then(homeworkData => {
+                outsideHomework = homeworkData;
+                return review.save();
+              })
+              .then(reviewData => outsideHomework.addReview(reviewData._id))
+              .then(homeworkData => homeworkData.save())
+              .then(
+                () => review,
+                err => errFilter(err, '添加审评失败')
+              )
+}
+//-------------------------------------------------------------------
+
 
 var Class = mongoose.model('Class', ClassSchema);
 var Group = mongoose.model('Group', GroupSchema);

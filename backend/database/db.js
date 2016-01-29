@@ -3,8 +3,6 @@ var config = require('../config');
 //middleware
 var mongoose = require('mongoose');
 //self
-var User = require('./User');
-var Post = require('./Post');
 
 ObjectId = mongoose.Schema.Types.ObjectId;
 

@@ -66,8 +66,19 @@ module.exports.validateMiddleware = function(validatorFunc) {
     }
   }
 }
-
-module.exports.deleteImage = function(imageAddress) {
+module.exports.checkSourceAndImageAllUploadMiddleware = function(req, res, next) {
+  if (!req.body.source && !req.body.image)
+    res.json({error: true, message: '预览图和源文件都没有上传'})
+  else if (!req.body.source && req.body.image) {
+    deleteImage(req.body.image).catch(err => debug(err))
+    res.json({error: true, message: '源文件没有上传'})
+  } else if (req.body.source && !req.body.image) {
+    deleteSource(req.body.source).catch(err => debug(err))
+    res.json({error: true, message: '预览图没有上传'})
+  } else
+    next();
+}
+function deleteImage(imageAddress) {
   var addr = path.join(__dirname, '..', 'uploads', 'homeworks', imageAddress);
   return new Promise((resolve, reject) => {
     fs.unlink(addr, function(err) {
@@ -76,7 +87,7 @@ module.exports.deleteImage = function(imageAddress) {
     })
   });
 }
-module.exports.deleteSource = function(sourceAddress) {
+function deleteSource(sourceAddress) {
   var addr = path.join(__dirname, '..', 'uploads', 'homeworks', sourceAddress);
   return new Promise((resolve, reject) => {
     fs.unlink(addr, function(err) {
@@ -85,3 +96,5 @@ module.exports.deleteSource = function(sourceAddress) {
     })
   });
 }
+module.exports.deleteImage = deleteImage;
+module.exports.deleteSource = deleteSource;
