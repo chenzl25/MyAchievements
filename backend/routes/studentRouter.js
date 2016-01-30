@@ -101,6 +101,48 @@ router.post('/group/:groupId/student/:studentId/homework/:homeworkId/review',
     errorMessage => res.json({error: true, message: errorMessage})
   );
 })
+router.put('/review/:reviewId',
+  tools.validateMiddleware(validator.validateUpdateReview.bind(validator)),
+  function(req, res) {
+  debug(req.body);
+  Review.update(req.session.userData._id, req.params.reviewId, req.body.message, req.body.score).then(
+    reviewData => res.json({error: false, reviewData:reviewData}),
+    errorMessage => res.json({error: true, message: errorMessage})
+  );
+})
+
+router.get('/group', function(req, res) { // at most need not to use.
+  User.studentGetGroup(req.session.userData._id).then(
+    groupData => res.json({error: false, groupData:groupData}),
+    errorMessage => res.json({error: true, message: errorMessage})
+  )
+})
+// router.get('/toReviewGroup/:toReviewGroupId', function(req, res) {
+//   User.studentGetToReviewGroupDetail(req.session.userData._id).then(
+
+//   )
+// })
+
+
+router.get('/homeworks', function(req, res) {
+  User.studentGetHomeworks(req.session.userData._id).then(
+    homeworksData => res.json({error: false, homeworksData:homeworksData}),
+    errorMessage => res.json({error: true, message: errorMessage})
+  )
+})
+
+router.get('/homework/:homeworkId/reviews', function(req, res) {
+  User.studentGetHomeworkReviews(req.session.userData._id, req.params.homeworkId).then(
+    reviewsData => res.json({error: false, reviewsData:reviewsData}),
+    errorMessage => res.json({error: true, message: errorMessage})
+  )
+})
+router.get('/assignment/:assignmentId/toReviewHomeworks', function(req, res) {
+  User.studentGetToReviewHomeworks(req.session.userData._id, req.params.assignmentId).then(
+    homeworksData => res.json({error: false, homeworksData:homeworksData}),
+    errorMessage => res.json({error: true, message: errorMessage})
+  )
+})
 
 router.use(function(err, req, res, next) {
 	if (err.code == 'LIMIT_FIELD_KEY')

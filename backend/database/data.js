@@ -5,43 +5,6 @@ var debug = require('debug')('api:User');
 
 ObjectId = mongoose.Schema.Types.ObjectId;
 
-var ClassSchema = new mongoose.Schema({
-  name: {type:String,default: null},
-  groupsId: [ObjectId],
-  assignmentsId: [ObjectId],
-  teachersId: [ObjectId],
-});
-
-var GroupSchema = new mongoose.Schema({
-  classId: {type: ObjectId, default: null},
-  name : {type:String,default: null},
-  assistantsId: [ObjectId],  // only one assistantsId
-  studentsId: [ObjectId],
-  toReviewGroupId: {type: ObjectId, default: null}
-});
-
-var UserSchema = new mongoose.Schema({
-  account: {type:String,default: null,index:true},
-  password: {type:String,default: null},
-  email: {type:String,default: null},
-  name: {type: String, default: null},
-  position: {type: String, default: null}, // teaccher, student, assistant
-  homeworksId: [ObjectId],
-  // classId: {type: ObjectId, default: null},  // only for the teacher, because the teacher don't belong to any group
-  // groupId: {type: ObjectId, default: null},  // for student and assistant
-  classsId: [ObjectId],
-  groupsId: [ObjectId],   //student has only one groupsId
-});
-
-var AssignmentSchema = new mongoose.Schema({
-  name : {type:String,default: null},
-  state: {type:String,default: 'future'},  // future,present,end
-  link: {type:String, default: null},
-  from: {type:String,default: Date.now},
-  end: {type:String,default: Date.now},
-  homeworksId: [ObjectId],
-  classsId: [ObjectId],
-})
 
 var HomeworkSchema = new mongoose.Schema({
   ownerId: {type:ObjectId, default: null},
@@ -54,8 +17,39 @@ var HomeworkSchema = new mongoose.Schema({
   groupRank: {type:String, default: null},
   classRank: {type:String, default: null},
   finalScore: {type:String, default: null},
-  finalMessage: {type:String, default: null}
+  finalMessage: {type:String, default: null},
+  LINK_assignment: {type:Object, default:null} 
+                  // {name:assignmentData.name,
+                  //  state:assignmentData.state,
+                  //  from: assignmentData.from,
+                  //  end: assignmentData.end,
+                  //  link:assignmentData.link }
 });
+var UserSchema = new mongoose.Schema({
+  account: {type:String,default: null,index:true},
+  password: {type:String,default: null},
+  email: {type:String,default: null},
+  name: {type: String, default: null},
+  position: {type: String, default: null}, // teaccher, student, assistant
+  homeworksId: [ObjectId],
+  classsId: [ObjectId],
+  groupsId: [ObjectId],   //student has only one groupsId
+  LINK_homeworks: [HomeworkSchema],
+  LINK_group: {type: Object, default: null},
+  LINK_class: {type: Object, default: null},
+});
+
+var AssignmentSchema = new mongoose.Schema({
+  name : {type:String,default: null},
+  state: {type:String,default: 'future'},  // future,present,end
+  link: {type:String, default: null},
+  from: {type:String,default: Date.now},
+  end: {type:String,default: Date.now},
+  homeworksId: [ObjectId],
+  classsId: [ObjectId],
+  LINK_homeworks: [HomeworkSchema]  //only for get to link other datas
+})
+
 
 var ReviewSchema = new mongoose.Schema({
   reviewerId: {type: ObjectId, default: null},
@@ -64,6 +58,27 @@ var ReviewSchema = new mongoose.Schema({
   message: {type: String, default: null},
   score: {type: String, default: null},
 });
+
+var GroupSchema = new mongoose.Schema({
+  classId: {type: ObjectId, default: null},
+  name : {type:String,default: null},
+  assistantsId: [ObjectId],  // only one assistantsId
+  studentsId: [ObjectId],
+  toReviewGroupId: {type: ObjectId, default: null},
+  LINK_assistants: [UserSchema],  //only for get to link other datas
+  LINK_students: [UserSchema]
+});
+
+var ClassSchema = new mongoose.Schema({
+  name: {type:String,default: null},
+  groupsId: [ObjectId],
+  assignmentsId: [ObjectId],
+  teachersId: [ObjectId],
+  LINK_assignments: [AssignmentSchema],  //only for get to link other datas
+  LINK_teachers: [UserSchema],
+  LINK_groups: [GroupSchema]
+});
+
 
 ClassSchema.set('autoIndex', false);
 GroupSchema.set('autoIndex', false);
@@ -287,6 +302,29 @@ GroupSchema.methods.findStudentWhetherInGroup = function(studentId) {
       return Promise.resolve('学生在这个组当中');
   return Promise.reject('学生不在这个组当中');
 }
+GroupSchema.methods.checkToReviewGroupIs = function(toReviewGroupId) {
+  return this.toReviewGroupId.toString() === toReviewGroupId.toString() ?
+              Promise.resolve('是对应的review小组') :
+              Promise.reject('不是对应的review小组')
+}
+GroupSchema.methods.getToReviewHomeworksByAssignmentId = function(assignmentId) {
+  var studentsId = this.studentsId;
+  return Assignment.findById(assignmentId)
+                   .then(assignmentData => {
+                     if(assignmentData.state !== 'present')
+                       return Promise.reject('作业不在present状态')
+                     return Promise.all(assignmentData.homeworksId.map(homeworkId => Homework.findById(homeworkId)))
+                   })
+                   .then(homeworksData => {
+                      var toReviewHomeworksData = homeworksData.filter(homeworkData => {
+                        for (var i = 0; i < studentsId.length; i++)
+                          if (homeworkData.ownerId.toString() === studentsId[i].toString())
+                            return true;
+                        return false;
+                      })                   
+                      return Promise.resolve(toReviewHomeworksData)
+                   })
+}
   //statics
 GroupSchema.statics.findById = function(groupId) {
   return Group.findOne({_id: groupId})
@@ -431,7 +469,7 @@ UserSchema.methods.createAssignmentForClass = function(assignmentData) {
                   err => errFilter(err, '创建班级作业失败')
                 )
 }
-UserSchema.methods.checkHomework = function(assignmentId) {
+UserSchema.methods.checkHomeworkWhoseAssignmentIs = function(assignmentId) {
   var homeworksId = this.homeworksId;
   var checkResultsPromise = homeworksId.map(homeworkId => 
     Homework.findById(homeworkId)
@@ -473,6 +511,25 @@ UserSchema.methods.whetherInGroup = function(groupId) {
     if(this.groupsId[i].toString() === groupId.toString())
       return Promise.resolve('该用户在这小组内')
   return Promise.reject('该用户不在这小组内')
+}
+UserSchema.methods.getHomeworksAndLinkAssignment = function() {
+  var homeworksId = this.homeworksId;
+  var homeworksDataPromise = homeworksId.map(homeworkId => 
+    Homework.findById(homeworkId)
+            .then(homeworkData => homeworkData.linkAssignment())
+  )
+  return Promise.all(homeworksDataPromise)
+}
+UserSchema.methods.accordingToPositionLink = function() {
+  if (this.position === 'student')
+    return this.getHomeworksAndLinkAssignment()
+                   .then(homeworksData => this.updateProperty({LINK_homeworks: homeworksData}))
+                   .then(() => Group.findById(this.groupsId[0]))
+                   .then(groupData => Class.findById(groupData.classId)
+                                           .then(classData => this.updateProperty({LINK_group:{name:groupData.name, toReviewGroupId:groupData.toReviewGroupId},LINK_class:{name:classData.name}}))
+                   )
+  else
+    return Promise.resolve(this)
 }
   // static****
 UserSchema.statics.findById = function(userId) {
@@ -526,6 +583,7 @@ UserSchema.statics.register = function (account, password, name,email, position)
 UserSchema.statics.login = function (account, password) {
   return  this.findOne({account:account, password: hash(password)}, {password:0})
               .then(userData => detectUserExist(userData))
+              .then(userData => userData.accordingToPositionLink())
               .then(
                 userData => userData,
                 err => Promise.reject('账号或密码错误')  // special we don't use the errFilter
@@ -534,6 +592,7 @@ UserSchema.statics.login = function (account, password) {
 UserSchema.statics.alreadyLogin = function(account) {
   return  this.findOne({account:account}, {password:0})
               .then(userData => detectUserExist(userData))
+              .then(userData => userData.accordingToPositionLink())
               .then(
                 userData => userData,
                 err => Promise.reject('再次登陆失败')
@@ -551,7 +610,38 @@ UserSchema.statics.delete = function (account) {
       err => errFilter(err, '删除用户失败')
 	  )
 };
-
+UserSchema.statics.studentGetGroup = function(studentId) {
+  return User.findStudentById(studentId)
+             .then(userData => Group.findById(userData.groupsId[0]))
+}
+UserSchema.statics.studentGetHomeworks = function(studentId) {
+  return User.findStudentById(studentId)
+             .then(userData => userData.getHomeworksAndLinkAssignment())
+             .then(
+               homeworksData => homeworksData,
+               err => errFilter(err, '获取所有作业详情失败')
+             )
+}
+UserSchema.statics.studentGetHomeworkReviews = function(studentId, homeworkId) {
+  return User.findStudentById(studentId)
+             .then(userData => userData.findHomeworkWhetherInStudent(homeworkId))
+             .then(() => Homework.findById(homeworkId))
+             .then(homeworkData => homeworkData.getReviews())
+             .then(
+               reviewsData => reviewsData,
+               err => errFilter(err, '获取作业评审失败')
+             )
+}
+UserSchema.statics.studentGetToReviewHomeworks = function(studentId, assignmentId) {
+  return User.findStudentById(studentId)
+             .then(studentData => Group.findById(studentData.groupsId[0]))
+             .then(groupData => Group.findById(groupData.toReviewGroupId))
+             .then(groupData => groupData.getToReviewHomeworksByAssignmentId(assignmentId))
+             .then(
+               homeworksData => homeworksData,
+               err => errFilter(err, '获取需要审查的作业失败')
+             )
+}
 //-------------------------------------------------------------------
 
 //Assignment---------------------------------------------------------
@@ -687,6 +777,23 @@ HomeworkSchema.methods.getGroupRank = function() {
 HomeworkSchema.methods.ownerIs = function(studentId) {
   return this.ownerId.toString() === studentId.toString()? Promise.resolve(this):Promise.reject('拥有者错误')
 }
+HomeworkSchema.methods.getReviews = function() {
+  var reviewsId = this.reviewsId;
+  var reviewsDataPromise = reviewsId.map(reviewId =>
+    Review.findById(reviewId)
+  )
+  return Promise.all(reviewsDataPromise)
+}
+HomeworkSchema.methods.linkAssignment = function() {
+  return Assignment.findById(this.assignmentId)
+                   .then(assignmentData => this.updateProperty({LINK_assignment:{
+                                                                  name:assignmentData.name,
+                                                                  state:assignmentData.state,
+                                                                  from: assignmentData.from,
+                                                                  end: assignmentData.end,
+                                                                  link:assignmentData.link }
+                                                               }))
+}
   //statics
 HomeworkSchema.statics.findById = function(homeworkId) {
   return Homework.findOne({_id: homeworkId})
@@ -705,7 +812,7 @@ HomeworkSchema.statics.create = function(studentId, assignmentId, source, image,
                if (assignmentData.state != 'present')
                  return Promise.reject('作业不在提交时间段内');
                outsideAssignment = assignmentData;
-               return outsideStudent.checkHomework(assignmentData._id)
+               return outsideStudent.checkHomeworkWhoseAssignmentIs(assignmentData._id)
              })
              .then(checkResult => {
                if(checkResult.exist === true)
@@ -771,29 +878,60 @@ HomeworkSchema.statics.teacherFinalReview = function(homeworkId, message, score)
 //-------------------------------------------------------------------
 
 //Review-------------------------------------------------------------
+  //methods
+ReviewSchema.methods.updateProperty = function(updater) {
+  for (key in updater) {
+    this[key] = updater[key];
+  }
+  return Promise.resolve(this);
+}
+ReviewSchema.methods.reviewerIs = function(reviewerId) {
+  return this.reviewerId.toString() === reviewerId.toString()? 
+              Promise.resolve('你是该评审的作者'): 
+              Promise.reject('你不是该评审的作者')
+}
+  //statics
 ReviewSchema.statics.findById = function(reviewId) {
     return Review.findOne({_id: reviewId})
                  .then(reviewData => detectReviewExist(reviewData));
 }
-ReviewSchema.statics.create = function(reviewerId, groupId, studentId, homeworkId, message, score) {
+ReviewSchema.statics.create = function(reviewerId, toReviewGroupId, beReviewerId, homeworkId, message, score) {
+  // this method only for student to review
   var outsideHomework;
-  var review = Review({ownerId: reviewerId, beReviewerId: studentId, message: message, score: score, homeworkId: homeworkId})
-  return Group.findById(groupId)
-              .then(groupData => groupData.findStudentWhetherInGroup(studentId))
-              .then(() => User.findStudentById(studentId))
-              .then(studentData => studentData.findHomeworkWhetherInStudent(homeworkId))
-              .then(() => Homework.findById(homeworkId))
-              .then(homeworkData => homeworkData.checkAssignmentStateIsPresent())
-              .then(homeworkData => {
+  var review = Review({reviewerId: reviewerId, beReviewerId: beReviewerId, message: message, score: score, homeworkId: homeworkId})
+  return User.findStudentById(reviewerId)
+             .then(studentData => Group.findById(studentData.groupsId[0]))
+             .then(groupData => groupData.checkToReviewGroupIs(toReviewGroupId))
+             .then(() => Group.findById(toReviewGroupId))
+             .then(groupData => groupData.findStudentWhetherInGroup(beReviewerId))
+             .then(() => User.findStudentById(beReviewerId))
+             .then(studentData => studentData.findHomeworkWhetherInStudent(homeworkId))
+             .then(() => Homework.findById(homeworkId))
+             .then(homeworkData => homeworkData.checkAssignmentStateIsPresent())
+             .then(homeworkData => {
                 outsideHomework = homeworkData;
-                return review.save();
-              })
+               return review.save();
+             })
               .then(reviewData => outsideHomework.addReview(reviewData._id))
-              .then(homeworkData => homeworkData.save())
-              .then(
-                () => review,
-                err => errFilter(err, '添加审评失败')
-              )
+             .then(homeworkData => homeworkData.save())
+             .then(
+               () => review,
+               err => errFilter(err, '添加审评失败')
+             )
+}
+ReviewSchema.statics.update = function(reviewerId, reviewId, message, score) {
+  var outsideReview;
+  return Review.findById(reviewId)
+               .then(reviewData => {
+                 outsideReview = reviewData
+                 return reviewData.reviewerIs(reviewerId)
+               })
+               .then(() => outsideReview.updateProperty({message:message, score:score}))
+               .then(reviewData => reviewData.save())
+               .then(
+                 reviewData => reviewData,
+                 err => errFilter(err, '更新审批失败')
+               )
 }
 //-------------------------------------------------------------------
 

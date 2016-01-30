@@ -26,6 +26,7 @@ var groupsId = [];
 var testReviewStudentsId = [];
 var toReviewGroupsId = [];
 var indexOfReviewGroupInOriginGroup = [];
+var indexOfOriginGroupInReviewGroup = [];
 var teacherOneId;
 var teacherTwoId
 var studentOneId;
@@ -36,6 +37,7 @@ var assignmentId;
 var homeworkId;
 var homeworksId = [];
 var agentStudents = [];
+var reviewId;
 var wrongId = '56a6d439558937d21b647828';
 
 chai.use(chaiHttp);
@@ -392,7 +394,6 @@ describe('Manager: Register, Login and Post:', function() {
 	it('teacher search group ensure the toReviewGroup normally', function(done) {
 		agentTeacher
 			.get('/Tapi/group/'+groupsId[0])
-			.send({name: 'myAchievement', link:'www.google.com', from:String(1453861720310+2500000), end:String(1453861720310+3000000000)})
 			.end(function(err, res) {
 				expect(res.body.error).equal(false);
 				expect(res.body.groupData.toReviewGroupId).not.equal(groupsId[0])
@@ -403,7 +404,6 @@ describe('Manager: Register, Login and Post:', function() {
 	it('teacher search group ensure the toReviewGroup normally', function(done) {
 		agentTeacher
 			.get('/Tapi/group/'+groupsId[1])
-			.send({name: 'myAchievement', link:'www.google.com', from:String(1453861720310+2500000), end:String(1453861720310+3000000000)})
 			.end(function(err, res) {
 				expect(res.body.error).equal(false);
 				expect(res.body.groupData.toReviewGroupId).not.equal(groupsId[1])
@@ -414,7 +414,6 @@ describe('Manager: Register, Login and Post:', function() {
 	it('teacher search group ensure the toReviewGroup normally', function(done) {
 		agentTeacher
 			.get('/Tapi/group/'+groupsId[2])
-			.send({name: 'myAchievement', link:'www.google.com', from:String(1453861720310+2500000), end:String(1453861720310+3000000000)})
 			.end(function(err, res) {
 				expect(res.body.error).equal(false);
 				expect(res.body.groupData.toReviewGroupId).not.equal(groupsId[2])
@@ -425,7 +424,6 @@ describe('Manager: Register, Login and Post:', function() {
 	it('teacher search group ensure the toReviewGroup normally', function(done) {
 		agentTeacher
 			.get('/Tapi/group/'+groupsId[3])
-			.send({name: 'myAchievement', link:'www.google.com', from:String(1453861720310+2500000), end:String(1453861720310+3000000000)})
 			.end(function(err, res) {
 				expect(res.body.error).equal(false);
 				expect(res.body.groupData.toReviewGroupId).not.equal(groupsId[3])
@@ -436,7 +434,6 @@ describe('Manager: Register, Login and Post:', function() {
 	it('teacher search group ensure the toReviewGroup normally', function(done) {
 		agentTeacher
 			.get('/Tapi/group/'+groupsId[4])
-			.send({name: 'myAchievement', link:'www.google.com', from:String(1453861720310+2500000), end:String(1453861720310+3000000000)})
 			.end(function(err, res) {
 				expect(res.body.error).equal(false);
 				expect(res.body.groupData.toReviewGroupId).not.equal(groupsId[4])
@@ -447,7 +444,6 @@ describe('Manager: Register, Login and Post:', function() {
 	it('teacher search group ensure the toReviewGroup normally', function(done) {
 		agentTeacher
 			.get('/Tapi/group/'+groupsId[5])
-			.send({name: 'myAchievement', link:'www.google.com', from:String(1453861720310+2500000), end:String(1453861720310+3000000000)})
 			.end(function(err, res) {
 				expect(res.body.error).equal(false);
 				expect(res.body.groupData.toReviewGroupId).not.equal(groupsId[5])
@@ -557,12 +553,24 @@ describe('Manager: Register, Login and Post:', function() {
 	it('prepare the data to test review', function(done) {
 		for (var i = 0; i < groupsId.length; i++) {
 			indexOfReviewGroupInOriginGroup.push(groupsId.indexOf(toReviewGroupsId[i]))
+			indexOfOriginGroupInReviewGroup.push(toReviewGroupsId.indexOf(groupsId[i]))
 		}
 		done();
 	})
+	for (let i = 0; i < groupsId.length; i++){
+		it('test indexOfReviewGroupInOriginGroup', function(done) {
+			agentManager
+				.get('/Mapi/group/'+groupsId[i])
+				.end(function(err, res) {
+					expect(res.body.error).equal(false);
+					expect(res.body.groupData.toReviewGroupId).equal(toReviewGroupsId[i])
+					done();
+				})
+		})
+	}
 	var agentToReview;
 	it('login the student who review the studentOne', function(done) {
-		var accountChar = indexOfReviewGroupInOriginGroup[0].toString();
+		var accountChar = indexOfOriginGroupInReviewGroup[0].toString();
 		var account = '';
 		var password = '';
 		for (var i = 0; i < 7; i++)
@@ -583,9 +591,11 @@ describe('Manager: Register, Login and Post:', function() {
 			.send({message:"well done well done well done well done well done well done well done well done well done ", score:"99"})
 			.end(function(err, res) {
 				expect(res.body.error).equal(false);
+				reviewId = res.body.reviewData._id;
 				done();
 			})
 	})
+	
 	it('assistant login successfully', function(done) {
 		agentAssistant = chai.request.agent(server);
 		agentAssistant
@@ -695,7 +705,6 @@ describe('Manager: Register, Login and Post:', function() {
 				.end(function(err, res) {
 					let homeworkData = res.body.homeworkData
 					expect(res.body.error).equal(false)
-					// console.log(homeworkData.finalScore, homeworkData.classRank, homeworkData.groupRank)
 					done();
 				})
 		})
@@ -715,7 +724,6 @@ describe('Manager: Register, Login and Post:', function() {
 				.end(function(err, res) {
 					let homeworkData = res.body.homeworkData
 					expect(res.body.error).equal(false)
-					// console.log(homeworkData.finalScore, homeworkData.classRank, homeworkData.groupRank)
 					done();
 				})
 		})
@@ -733,7 +741,6 @@ describe('Manager: Register, Login and Post:', function() {
 				.get('/Tapi/homework/'+homeworksId[i])
 				.end(function(err, res) {
 					let homeworkData = res.body.homeworkData
-					console.log(homeworkData.finalScore, homeworkData.classRank, homeworkData.groupRank)
 					expect(res.body.error).equal(false)
 					done();
 				})
@@ -742,7 +749,7 @@ describe('Manager: Register, Login and Post:', function() {
 	var testGroupRankStudentsId = [];
 	var testGroupRankHomeworksId = [];
 	var testGroupRankAgents = [];
-	var testGroupNumber = 20;
+	var testGroupNumber = 10;
 	var testGroupRankResult = [];
 	for(let i = 0; i < testGroupNumber; i++){
 		it('register student successfully', function(done) {
@@ -793,7 +800,6 @@ describe('Manager: Register, Login and Post:', function() {
 				.end(function(err, res) {
 					let homeworkData = res.body.homeworkData
 					expect(res.body.error).equal(false)
-					// console.log(homeworkData.finalScore, homeworkData.classRank, homeworkData.groupRank)
 					done();
 				})
 		})
@@ -818,8 +824,74 @@ describe('Manager: Register, Login and Post:', function() {
 				})
 		})
 	it('show the groupRank result', function(done) {
-		console.log(testGroupRankResult)
 		done();
+	})
+	for (let i = 0; i < 6; i++)
+		it('student get group', function(done) {
+			agentStudents[i]
+				.get('/Sapi/group')
+				.end(function(err, res) {
+					expect(res.body.error).equal(false);
+					expect(res.body.groupData._id).equal(groupsId[i])
+					done();
+				})
+		})
+	for (let i = 0; i < 6; i++)
+		it('student get homeworks', function(done) {
+			agentStudents[i]
+				.get('/Sapi/homeworks')
+				.end(function(err, res) {
+					expect(res.body.error).equal(false);
+					expect(res.body.homeworksData[0]._id).equal(homeworksId[i])
+					done();
+				})
+		})
+	it('update review', function(done) {
+		agentToReview
+			.put('/Sapi/review/'+reviewId)
+			.send({message:'hehehehehehehehehehehehehehehehehehehehehehehehehehehehehehehehehehehehehehehehe', score:'9'})
+			.end(function(err, res) {
+				expect(res.body.error).equal(false)
+				done();
+			})
+	})
+	for (let i = 0; i < 6; i++)
+		it('student get homeworks', function(done) {
+			agentStudents[i]
+				.get('/Sapi/homework/'+homeworksId[i]+'/reviews')
+				.end(function(err, res) {
+					expect(res.body.error).equal(false);
+					done();
+				})
+		})
+	it('student get homeworks', function(done) {
+			agentStudents[0]
+				.get('/Sapi/homeworks')
+				.end(function(err, res) {
+					expect(res.body.error).equal(false);
+					expect(res.body.homeworksData[0]._id).equal(homeworksId[0])
+					done();
+				})
+		})
+	it('student login', function(done) {
+		agentStudents.push(chai.request.agent(server))
+		agentStudents[0]
+			.post('/api/login')
+			.send({'account':'0000000', 'password':'0000000'})
+			.then((res) =>{
+		    expect(res.body.error).equal(false);
+		    done();
+			});
+	})
+	it('get toReviewHomeworks', function(done) {
+		agentToReview 
+			.get('/Sapi/assignment/'+assignmentId+'/toReviewHomeworks')
+			.end(function(err, res) {
+				console.log(res.body)
+				console.log(res.body.homeworksData.length)
+				expect(res.body.error).equal(false);
+				done();
+			})
 	})
 });
 

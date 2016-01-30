@@ -127,6 +127,9 @@ var validator = {
 	},
 	validateCreateReview: function(input) {
 		return this._validate({reviewMessage: input.message, reviewScore: input.score});
-	}
+	},
+	validateUpdateReview: function(input) {
+		return this.validateCreateReview(input);
+	},
 };
 module.exports = validator;
