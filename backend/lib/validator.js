@@ -84,6 +84,16 @@ var validator = {
 			errorMessage: '评审的分数为0-100',
 			emptyMessage: '评审分数为空',
 			pattern: /(^100$)|^([1-9]{0,1}[0-9]{1}$)/
+		},
+		oldPassword: {
+			errorMessage: '原密码6~18位英文字母、数字',
+			emptyMessage: '原密码为空',
+			pattern: /^[a-zA-Z0-9]{6,18}$/
+		},
+		newPassword: {
+			errorMessage: '新密码6~18位英文字母、数字',
+			emptyMessage: '新密码为空',
+			pattern: /^[a-zA-Z0-9]{6,18}$/
 		}
 	},
 	_validate: function(mapper) {
@@ -131,5 +141,8 @@ var validator = {
 	validateUpdateReview: function(input) {
 		return this.validateCreateReview(input);
 	},
+	validateChangePassword: function(input) {
+		return this._validate({oldPassword: input.oldPassword, newPassword: input.newPassword})
+	}
 };
 module.exports = validator;

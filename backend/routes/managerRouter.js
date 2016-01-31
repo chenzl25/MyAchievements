@@ -71,26 +71,47 @@ router.post('/group/:groupId/assistant/:assistantId',function(req, res) {
   )
 });
 router.get('/user/:userId', function(req, res) {
-  debug(req.body);
   User.findById(req.params.userId).then(
     userData => res.json({error:false, userData: userData}),
     errorMessage => res.json({error: true, message: errorMessage})
   )
 })
 router.get('/class/:classId', function(req, res) {
-  debug(req.body);
   Class.findById(req.params.classId).then(
     classData => res.json({error: false, classData: classData}),
     errorMessage => res.json({error: true, message: errorMessage})
   )
 });
 router.get('/group/:groupId', function(req, res) {
-  debug(req.body);
   Group.findById(req.params.groupId).then(
     groupData => res.json({error: false, groupData: groupData}),
     errorMessage => res.json({error: true, message: errorMessage})
   )
 });
+router.get('/classs', function(req, res) {
+  Class.find({}).then(
+    classsData => res.json({error: false, classsData: classsData}),
+    errorMessage => res.json({error: true, message: errorMessage})
+  )
+})
+router.get('/groups', function(req, res) {
+  Group.find({}).then(
+    groupsData => res.json({error: false, groupsData: groupsData}),
+    errorMessage => res.json({error: true, message: errorMessage})
+  )
+})
+router.get('/groups', function(req, res) {
+  Group.find({}).then(
+    groupsData => res.json({error: false, groupsData: groupsData}),
+    errorMessage => res.json({error: true, message: errorMessage})
+  )
+})
+router.get('/users', function(req, res) {
+  User.find({}).then(
+    usersData => res.json({error: false, usersData: usersData}),
+    errorMessage => res.json({error: true, message: errorMessage})
+  )
+})
 router.delete('/user/:userAccount', function(req, res) {
   debug(req.body);
   User.delete(req.params.userAccount).then(

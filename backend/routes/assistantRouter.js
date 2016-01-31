@@ -19,6 +19,12 @@ var router = express.Router();
 router.use(tools.checkLoginMiddleware);
 router.use(tools.checkAssistantMiddleware);
 
+router.get('/assignment/:assignmentId/toReviewHomeworks', function(req, res) {
+	User.assistantGetToReviewHomeworks(req.session.userData._id, req.params.assignmentId).then(
+    homeworksData => res.json({error: false, homeworksData:homeworksData}),
+    errorMessage => res.json({error: true, message: errorMessage})
+  )
+})
 
 router.post('/group/:groupId/student/:studentId/homework/:homeworkId/finalReview', 
 	tools.validateMiddleware(validator.validateCreateReview.bind(validator)),
@@ -29,5 +35,6 @@ router.post('/group/:groupId/student/:studentId/homework/:homeworkId/finalReview
     errorMessage => res.json({error: true, message: errorMessage})
   );
 })
+
 
 module.exports = router;

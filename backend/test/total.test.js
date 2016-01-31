@@ -41,7 +41,7 @@ var reviewId;
 var wrongId = '56a6d439558937d21b647828';
 
 chai.use(chaiHttp);
-describe('Manager: Register, Login and Post:', function() {
+describe('Total test', function() {
   before(function(done){
     User.collection.drop();
     Class.collection.drop();
@@ -388,6 +388,16 @@ describe('Manager: Register, Login and Post:', function() {
 			.end(function(err, res) {
 				expect(res.body.error).equal(false);
 				assignmentId = res.body.assignmentData._id;
+				done();
+			});
+	});
+	it('teacher add assignment', function(done) {
+		agentTeacher
+			.post('/Tapi/assignment')
+			.send({name: 'myAchievement', link:'www.baidu.com', from:String(1453861720310+2500000), end:String(1453861720310+1)})
+			.end(function(err, res) {
+				expect(res.body.error).equal(false);
+				// assignmentId = res.body.assignmentData._id;
 				done();
 			});
 	});
@@ -887,11 +897,116 @@ describe('Manager: Register, Login and Post:', function() {
 		agentToReview 
 			.get('/Sapi/assignment/'+assignmentId+'/toReviewHomeworks')
 			.end(function(err, res) {
-				console.log(res.body)
-				console.log(res.body.homeworksData.length)
+				reviewId = res.body.homeworksData[0].LINK_review._id
 				expect(res.body.error).equal(false);
 				done();
 			})
+	})
+	it('update review', function(done) {
+		agentToReview 
+			.put('/Sapi/review/'+reviewId)
+			.send({message:'newnewnenwnewnenwnewnenwnenwnewnenwnenwnewnnewnenwnewn', score:'15'})
+			.end(function(err, res) {
+				// reviewId = res.body.homeworksData[0].LINK_review.reviewer
+				expect(res.body.error).equal(false);
+				done();
+			})
+	})
+	it('change password', function(done) {
+		agentStudents[5]
+			.post('/Sapi/changePassword')
+			.send({oldPassword:'5555555', newPassword:'newPassword'})
+			.end(function(err, res) {
+				expect(res.body.error).equal(false);
+				done();
+			})
+	})
+	it('login successfully after change password', function(done) {
+		chai.request(server)
+				.post('/api/login')
+				.send({account: '5555555', password:'newPassword'})
+				.end(function(err, res) {
+					expect(res.body.error).equal(false);
+					done()
+				})
+	})
+	it('change password', function(done) {
+		agentStudents[5]
+			.post('/Sapi/changePassword')
+			.send({oldPassword:'newPassword', newPassword:'5555555'})
+			.end(function(err, res) {
+				expect(res.body.error).equal(false);
+				done();
+			})
+	})
+	it('assistant login successfully', function(done) {
+		agentAssistant = chai.request.agent(server);
+		agentAssistant
+			.post('/api/login')
+			.send({'account':'assistant1', 'password':'assistant1'})
+			.then((res) =>{
+		    expect(res.body.error).equal(false);
+		    done();
+			});
+	})
+	it('assistant get toReviewHomeworks', function(done) {
+		agentAssistant
+			.get('/Aapi/assignment/'+assignmentId+'/toReviewHomeworks')
+			.then((res) =>{
+		    expect(res.body.error).equal(false);
+		    done();
+			});
+	})
+	it('teacher login fail', function(done) {
+		chai.request(server)
+			.post('/api/login')
+			.then((res) =>{
+		    expect(res.body.error).equal(true);
+		    done();
+			});
+	})
+	it('teacher alreadylogin successfully', function(done) {
+		agentTeacher
+			.post('/api/login')
+			.then((res) =>{
+		    expect(res.body.error).equal(false);
+		    done();
+			});
+	})
+	it('teacher get toReviewHomeworks', function(done) {
+		agentTeacher
+			.get('/Tapi/assignment/'+assignmentId+'/toReviewHomeworks')
+			.then((res) =>{
+		    expect(res.body.error).equal(false);
+		    done();
+			});
+	})
+	it('manager get classs', function(done) {
+		agentManager
+			.get('/Mapi/classs')
+			.then((res) =>{
+				console.log(res.body)
+		    expect(res.body.error).equal(false);
+		    done();
+			});
+	})
+	it('manager get groups', function(done) {
+		agentManager
+			.get('/Mapi/groups')
+			.then((res) =>{
+				console.log(res.body)
+		    expect(res.body.error).equal(false);
+		    done();
+			});
+	})
+	it('manager get users', function(done) {
+		agentManager
+			.get('/Mapi/users')
+			.then((res) =>{
+				console.log(res.body)
+		    expect(res.body.error).equal(false);
+		    done();
+			});
 	})
 });
 

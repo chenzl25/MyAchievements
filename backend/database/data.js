@@ -18,7 +18,18 @@ var HomeworkSchema = new mongoose.Schema({
   classRank: {type:String, default: null},
   finalScore: {type:String, default: null},
   finalMessage: {type:String, default: null},
-  LINK_assignment: {type:Object, default:null} 
+  LINK_owner: {type:Object, default:null}, //for assistant, teacher
+                // {name:
+                //  email:}
+  LINK_group: {type:Object, default:null}, //for assistant, teacher
+                // {_id:
+                //  name:}
+  LINK_class: {type:Object, default:null}, //for teacher 
+                // {_id:
+                //  name:}
+  LINK_review: {type:Object, default:null},  // only one. be used to check update or create review.
+                  // reviewSchema
+  LINK_assignment: {type:Object, default:null},
                   // {name:assignmentData.name,
                   //  state:assignmentData.state,
                   //  from: assignmentData.from,
@@ -32,11 +43,12 @@ var UserSchema = new mongoose.Schema({
   name: {type: String, default: null},
   position: {type: String, default: null}, // teaccher, student, assistant
   homeworksId: [ObjectId],
-  classsId: [ObjectId],
+  classsId: [ObjectId],   // teacher may have serval class
   groupsId: [ObjectId],   //student has only one groupsId
-  LINK_homeworks: [HomeworkSchema],
-  LINK_group: {type: Object, default: null},
-  LINK_class: {type: Object, default: null},
+  LINK_homeworks: [HomeworkSchema],           
+  LINK_group: {type: Object, default: null},  // 
+  LINK_class: {type: Object, default: null},  // 
+  LINK_assignments: {type: Object, default: null},  // for teacher
 });
 
 var AssignmentSchema = new mongoose.Schema({
@@ -74,9 +86,9 @@ var ClassSchema = new mongoose.Schema({
   groupsId: [ObjectId],
   assignmentsId: [ObjectId],
   teachersId: [ObjectId],
-  LINK_assignments: [AssignmentSchema],  //only for get to link other datas
-  LINK_teachers: [UserSchema],
-  LINK_groups: [GroupSchema]
+  LINK_assignments: [],  //only for get to link other datas
+  LINK_teachers: [],
+  LINK_groups: []
 });
 
 
@@ -190,6 +202,27 @@ ClassSchema.methods.letGroupReview = function() {
                   () => this,
                   err => errFilter(err, '发布作业失败，因分配批改小组失败')
                 )
+}
+ClassSchema.methods.linkAssignments = function() {
+  var assignmentsId = this.assignmentsId;
+  if (assignmentsId.length === 0)
+    return Promise.resolve(this)
+  var assignmentsDataPromise = assignmentsId.map(assignmentId =>
+    Assignment.findById(assignmentId)
+  )
+  return Promise.all(assignmentsDataPromise)
+                .then(assignmentsData => {
+                  for (var i = 0; i < assignmentsData.length; i++) {
+                    this.LINK_assignments.push({
+                      _id:assignmentsData[i]._id,
+                      name: assignmentsData[i].name,
+                      state: assignmentsData[i].state,
+                      from: assignmentsData[i].from,
+                      end: assignmentsData[i].end
+                    })
+                  }
+                  return Promise.resolve(this)
+                })
 }
   //static
 ClassSchema.statics.findById = function(classId) {
@@ -321,7 +354,7 @@ GroupSchema.methods.getToReviewHomeworksByAssignmentId = function(assignmentId) 
                           if (homeworkData.ownerId.toString() === studentsId[i].toString())
                             return true;
                         return false;
-                      })                   
+                      })
                       return Promise.resolve(toReviewHomeworksData)
                    })
 }
@@ -528,8 +561,87 @@ UserSchema.methods.accordingToPositionLink = function() {
                    .then(groupData => Class.findById(groupData.classId)
                                            .then(classData => this.updateProperty({LINK_group:{name:groupData.name, toReviewGroupId:groupData.toReviewGroupId},LINK_class:{name:classData.name}}))
                    )
+  else if (this.position === 'assistant')
+    if(this.groupsId.length === 0)
+      return Promise.resolve(this)
+    else
+      return Group.findById(this.groupsId[0])
+                  .then(groupData => Class.findById(groupData.classId))
+                  .then(classData => classData.linkAssignments())
+                  .then(classData => this.updateProperty({LINK_class: classData}))
+                  .then(() => this)
+  else if (this.position === 'teacher')
+    if (this.classsId.length === 0)
+      return Promise.resolve(this)
+    else
+      return Class.findById(this.classsId[0])
+                  .then(classData => classData.linkAssignments())
+                  .then(classData => this.updateProperty({LINK_assignments:classData.LINK_assignments}))
   else
     return Promise.resolve(this)
+}
+UserSchema.methods.assistantGetToReviewHomeworks = function(assignmentId) {
+  var groupsId = this.groupsId;
+  var outsideStudentsId;
+  var groupsDataPromise = groupsId.map(groupId =>
+    Group.findById(groupId)
+  )
+  return Promise.all(groupsDataPromise)
+                .then(groupsData => {
+                  var studentsId = [];
+                  for (var i = 0; i < groupsData.length; i++)
+                    studentsId = studentsId.concat(groupsData[i].studentsId)
+                  return Promise.resolve(studentsId)
+                })
+                .then(studentsId => {
+                  outsideStudentsId = studentsId;
+                  return Assignment.findById(assignmentId)
+                })
+                .then(assignmentData => {
+                  var homeworksId = assignmentData.homeworksId;
+                  var homeworksDataPromise = homeworksId.map(homeworkId => 
+                    Homework.findById(homeworkId)
+                  )
+                  return Promise.all(homeworksDataPromise)
+                })
+                .then(homeworksData => {
+                  return homeworksData.filter(homeworkData => {
+                    for (var i = 0; i < outsideStudentsId.length; i++)
+                      if (outsideStudentsId[i].toString() === homeworkData.ownerId.toString())
+                        return true
+                    return false
+                  })
+                })
+                .then(homeworksData => {
+                  var homeworksDataPromise = homeworksData.map(homeworkData =>
+                    User.findStudentById(homeworkData.ownerId)
+                        .then(studentData => homeworkData.updateProperty({LINK_owner:{name:studentData.name, email:studentData.email},LINK_group:{_id:studentData.groupsId[0]}}))
+                        .then(homeworkData => Group.findById(homeworkData.LINK_group._id))
+                        .then(groupData => homeworkData.updateProperty({LINK_group:{_id:groupData._id, name:groupData.name}}))
+                  )
+                  return Promise.all(homeworksDataPromise)
+                })
+}
+UserSchema.methods.teacherGetToReviewHomeworks = function(assignmentId) {
+  return Assignment.findById(assignmentId)
+                   .then(assignmentData => {
+                     var homeworksId = assignmentData.homeworksId;
+                     var homeworksDataPromise = homeworksId.map(homeworkId => 
+                      Homework.findById(homeworkId)
+                     )
+                     return Promise.all(homeworksDataPromise)
+                   })
+                   .then(homeworksData => {
+                    var homeworksDataPromise = homeworksData.map(homeworkData =>
+                      User.findStudentById(homeworkData.ownerId)
+                          .then(studentData => homeworkData.updateProperty({LINK_owner:{name:studentData.name, email:studentData.email},LINK_group:{_id:studentData.groupsId[0]}}))
+                          .then(homeworkData => Group.findById(homeworkData.LINK_group._id))
+                          .then(groupData => homeworkData.updateProperty({LINK_group:{_id:groupData._id, name:groupData.name}, LINK_class:{_id:groupData.classId}}))
+                          .then(homeworkData => Class.findById(homeworkData.LINK_class._id))
+                          .then(classData => homeworkData.updateProperty({LINK_class:{_id:classData._id, name:classData.name}}))
+                    )
+                    return Promise.all(homeworksDataPromise)
+                  })
 }
   // static****
 UserSchema.statics.findById = function(userId) {
@@ -637,9 +749,36 @@ UserSchema.statics.studentGetToReviewHomeworks = function(studentId, assignmentI
              .then(studentData => Group.findById(studentData.groupsId[0]))
              .then(groupData => Group.findById(groupData.toReviewGroupId))
              .then(groupData => groupData.getToReviewHomeworksByAssignmentId(assignmentId))
+             .then(homeworksData => Promise.all(homeworksData.map(homeworkData => homeworkData.linkReviewByStudentId(studentId))))
              .then(
                homeworksData => homeworksData,
                err => errFilter(err, '获取需要审查的作业失败')
+             )
+}
+UserSchema.statics.assistantGetToReviewHomeworks = function(assistantId, assignmentId) {
+  return User.findAssistantById(assistantId)
+             .then(assistantData => assistantData.assistantGetToReviewHomeworks(assignmentId))
+             .then(
+               homeworksData => homeworksData,
+               err => errFilter(err, '助教获取需要审评的作业失败')
+             )
+}
+UserSchema.statics.teacherGetToReviewHomeworks = function(teacherId, assignmentId) {
+  return User.findTeacherById(teacherId)
+             .then(teacherData => teacherData.teacherGetToReviewHomeworks(assignmentId))
+             .then(
+               homeworksData => homeworksData,
+               err => errFilter(err, '教师获取需要审评的作业失败')
+             )
+}
+UserSchema.statics.changePassword = function(userId, oldPassword , newPassword) {
+  return User.findById(userId)
+             .then(userData => userData.password === hash(oldPassword)?userData:Promise.reject('原密码错误'))
+             .then(userData => userData.updateProperty({password: hash(newPassword)}))
+             .then(userData => userData.save())
+             .then(
+              () => '修改密码成功',
+              err => errFilter(err, '修改密码失败')
              )
 }
 //-------------------------------------------------------------------
@@ -793,6 +932,19 @@ HomeworkSchema.methods.linkAssignment = function() {
                                                                   end: assignmentData.end,
                                                                   link:assignmentData.link }
                                                                }))
+}
+HomeworkSchema.methods.linkReviewByStudentId = function(studentId) {
+  var reviewsId = this.reviewsId;
+  var reviewsDataPromise = reviewsId.map(reviewId => 
+    Review.findById(reviewId)
+  )
+  return Promise.all(reviewsDataPromise)
+                .then(reviewsData => {
+                  for (var i = 0; i < reviewsData.length; i++)
+                    if (reviewsData[i].reviewerId.toString() === studentId.toString())
+                      return this.updateProperty({LINK_review: reviewsData[i]})
+                  return Promise.resolve(this)
+                })
 }
   //statics
 HomeworkSchema.statics.findById = function(homeworkId) {

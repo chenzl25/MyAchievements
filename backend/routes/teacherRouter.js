@@ -88,6 +88,12 @@ router.put('/assignment/:assignmentId/rank', function(req, res) {
     errorMessage => res.json({error: true, message: errorMessage})
   )
 })
+router.get('/assignment/:assignmentId/toReviewHomeworks', function(req, res) {
+  User.teacherGetToReviewHomeworks(req.session.userData._id, req.params.assignmentId).then(
+    homeworksData => res.json({error: false, homeworksData:homeworksData}),
+    errorMessage => res.json({error: true, message: errorMessage})
+  )
+})
 
 
 module.exports = router;

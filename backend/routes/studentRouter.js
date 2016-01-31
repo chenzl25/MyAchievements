@@ -63,12 +63,6 @@ var homeworkUpload = multer({
 router.use(tools.checkLoginMiddleware);
 router.use(tools.checkStudentMiddleware);
 
-router.get('/assignment/:assignmentId', function(req, res) {
-  Assignment.findById(req.params.assignmentId).then(
-    assignmentData => res.json({error: false, assignmentData: assignmentData}),
-    errorMessage => res.json({error: true, message: errorMessage})
-  )
-});
 
 router.post('/assignment/:assignmentId/homework', 
   tools.validateMiddleware(validator.validateCreateHomework.bind(validator)),
@@ -93,9 +87,9 @@ router.put('/homework/:homeworkId',
   );
 })
 router.post('/group/:groupId/student/:studentId/homework/:homeworkId/review', 
-	tools.validateMiddleware(validator.validateCreateReview.bind(validator)),
-	function(req, res) {
-	debug(req.body);
+  tools.validateMiddleware(validator.validateCreateReview.bind(validator)),
+  function(req, res) {
+  debug(req.body);
   Review.create(req.session.userData._id, req.params.groupId, req.params.studentId, req.params.homeworkId, req.body.message, req.body.score).then(
     reviewData => res.json({error: false, reviewData:reviewData}),
     errorMessage => res.json({error: true, message: errorMessage})
@@ -111,31 +105,26 @@ router.put('/review/:reviewId',
   );
 })
 
-router.get('/group', function(req, res) { // at most need not to use.
-  User.studentGetGroup(req.session.userData._id).then(
-    groupData => res.json({error: false, groupData:groupData}),
+router.get('/assignment/:assignmentId', function(req, res) {
+  Assignment.findById(req.params.assignmentId).then(
+    assignmentData => res.json({error: false, assignmentData: assignmentData}),
     errorMessage => res.json({error: true, message: errorMessage})
   )
-})
-// router.get('/toReviewGroup/:toReviewGroupId', function(req, res) {
-//   User.studentGetToReviewGroupDetail(req.session.userData._id).then(
-
-//   )
-// })
-
-
-router.get('/homeworks', function(req, res) {
-  User.studentGetHomeworks(req.session.userData._id).then(
-    homeworksData => res.json({error: false, homeworksData:homeworksData}),
-    errorMessage => res.json({error: true, message: errorMessage})
-  )
-})
-
+});
 router.get('/homework/:homeworkId/reviews', function(req, res) {
   User.studentGetHomeworkReviews(req.session.userData._id, req.params.homeworkId).then(
     reviewsData => res.json({error: false, reviewsData:reviewsData}),
     errorMessage => res.json({error: true, message: errorMessage})
   )
+})
+
+router.post('/changePassword',
+  tools.validateMiddleware(validator.validateChangePassword.bind(validator)),
+  function(req,res) {
+    User.changePassword(req.session.userData._id, req.body.oldPassword, req.body.newPassword).then(
+      successMessage => res.json({error: false, message:successMessage}),
+      errorMessage => res.json({error: true, message: errorMessage})
+    )
 })
 router.get('/assignment/:assignmentId/toReviewHomeworks', function(req, res) {
   User.studentGetToReviewHomeworks(req.session.userData._id, req.params.assignmentId).then(
@@ -143,6 +132,23 @@ router.get('/assignment/:assignmentId/toReviewHomeworks', function(req, res) {
     errorMessage => res.json({error: true, message: errorMessage})
   )
 })
+
+// below can omit
+router.get('/homeworks', function(req, res) {
+  User.studentGetHomeworks(req.session.userData._id).then(
+    homeworksData => res.json({error: false, homeworksData:homeworksData}),
+    errorMessage => res.json({error: true, message: errorMessage})
+  )
+})
+
+router.get('/group', function(req, res) { // at most need not to use.
+  User.studentGetGroup(req.session.userData._id).then(
+    groupData => res.json({error: false, groupData:groupData}),
+    errorMessage => res.json({error: true, message: errorMessage})
+  )
+})
+
+
 
 router.use(function(err, req, res, next) {
 	if (err.code == 'LIMIT_FIELD_KEY')

@@ -25,7 +25,7 @@ var assistantTwoId;
 var wrongId = '56a6d439558937d21b647828';
 
 chai.use(chaiHttp);
-describe('Manager: Register, Login and Post:', function() {
+describe('Manager delete', function() {
   before(function(done){
     User.collection.drop();
     Class.collection.drop();
