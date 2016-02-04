@@ -1,52 +1,59 @@
 {
-  "version": "0.0.0",
-  "private": true,
-  "name": "simple-blog-system",
-  "description": "a simple blog system built by MEAN stack",
-  "repository": "https://github.com/chenzl25/simple-blog-system.git",
-  "license": "MIT",
-  "devDependencies": {
-    "del": "^2.2.0",
-    "gulp": "^3.9.0",
-    "gulp-autoprefixer": "^3.1.0",
-    "gulp-concat": "^2.6.0",
-    "gulp-connect": "^2.3.1",
-    "gulp-html-replace": "^1.5.5",
-    "gulp-imagemin": "^2.4.0",
-    "gulp-jade": "^1.1.0",
-    "gulp-jshint": "^2.0.0",
-    "gulp-livereload": "^3.8.1",
-    "gulp-minify-css": "^1.2.3",
-    "gulp-notify": "^2.2.0",
-    "gulp-rename": "^1.2.2",
-    "gulp-ruby-sass": "^2.0.6",
-    "gulp-sass": "^2.1.1",
-    "gulp-sourcemaps": "^1.6.0",
-    "gulp-uglify": "^1.5.1",
-    "gulp-watch": "^4.3.5",
-    "jshint": "^2.9.1-rc2",
-    "karma": "^0.12.16",
-    "karma-chrome-launcher": "^0.1.4",
-    "karma-firefox-launcher": "^0.1.3",
-    "karma-jasmine": "~0.1.0",
-    "karma-webpack": "^1.7.0",
-    "node-sass": "^3.4.2",
-    "protractor": "^2.1.0",
-    "proxy-middleware": "^0.15.0",
-    "stream-combiner2": "^1.1.1"
-  },
-  "dependencies": {
-    "moment": "^2.10.6",
-    "angular": "1.4.x",
-    "angular-mocks": "1.4.x",
-    "angular-route": "1.4.x",
-    "angular-resource": "1.4.x",
-    "angular-animate": "1.4.x"
-  },
+  "name": "my-achievements",
+  "version": "1.0.0",
+  "description": "a web-programing homework upload system",
+  "main": "",
   "scripts": {
-    "start": "./blog-backend/bin/www & gulp",
-    "test": "node node_modules/karma/bin/karma start test/karma.conf.js",
-    "e2e": "protractor test/protractor-conf.js",
-    "deploy": "gulp deploy"
+    "test": "test",
+    "start": "node server.js",
+    "deploy": "NODE_ENV=production webpack -p --config webpack.config.pro.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/chenzl25/MyAchievements.git"
+  },
+  "keywords": [
+    "web",
+    "angular2",
+    "node",
+    "webpack",
+    "homework",
+    "upload",
+    "system"
+  ],
+  "author": "Dylan",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/chenzl25/MyAchievements/issues"
+  },
+  "homepage": "https://github.com/chenzl25/MyAchievements#readme",
+  "dependencies": {
+    "angular2": "^2.0.0-beta.3",
+    "bootstrap": "^3.3.6",
+    "es6-promise": "^3.0.2",
+    "es6-shim": "^0.34.2",
+    "reflect-metadata": "^0.1.3",
+    "rxjs": "^5.0.0-beta.1",
+    "zone": "^0.3.4",
+    "zone.js": "^0.5.13"
+  },
+  "devDependencies": {
+    "css-loader": "^0.23.1",
+    "es6-promise": "^3.0.2",
+    "es6-shim": "^0.34.2",
+    "file-loader": "^0.8.5",
+    "html-webpack-plugin": "^2.8.1",
+    "jade": "^1.11.0",
+    "jade-html-loader": "0.0.3",
+    "node-sass": "^3.4.2",
+    "open-browser-webpack-plugin": "0.0.2",
+    "raw-loader": "^0.5.1",
+    "sass-loader": "^3.1.2",
+    "style-loader": "^0.13.0",
+    "ts-loader": "^0.8.0",
+    "typescript": "^1.7.5",
+    "url-loader": "^0.5.7",
+    "webpack": "^1.12.12",
+    "webpack-dev-server": "^1.14.1"
   }
 }

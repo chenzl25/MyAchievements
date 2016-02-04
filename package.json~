@@ -1,0 +1,32 @@
+{
+  "name": "my-achievements",
+  "version": "1.0.0",
+  "description": "a web-programing homework upload system",
+  "main": "server.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "test",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/chenzl25/MyAchievements.git"
+  },
+  "keywords": [
+    "web",
+    "angular2",
+    "node",
+    "webpack",
+    "homework",
+    "upload",
+    "system"
+  ],
+  "author": "Dylan",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/chenzl25/MyAchievements/issues"
+  },
+  "homepage": "https://github.com/chenzl25/MyAchievements#readme"
+}
