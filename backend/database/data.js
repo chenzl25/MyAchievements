@@ -132,7 +132,7 @@ function hash(password) {
 function errFilter(err, finalErrorMessage) {
   if (typeof err === 'string')
     finalErrorMessage = err;
-  finalErrorMessage = err   // use this to debug
+  // finalErrorMessage = err   // use this to debug
   return Promise.reject(finalErrorMessage)
 }
 function letEveryElementInArrayChangeIndex(originArray) {

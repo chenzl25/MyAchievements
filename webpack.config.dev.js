@@ -50,6 +50,10 @@ module.exports = {
     new webpack.optimize.OccurenceOrderPlugin(),
     new webpack.NoErrorsPlugin(),
     devFlagPlugin,
+    new webpack.ProvidePlugin({
+       $: "jquery",
+       jQuery: "jquery"
+    })
   ],
   module: {
     loaders: [
@@ -64,17 +68,13 @@ module.exports = {
            include: path.join(PATH.src)
       }, { test: /\.css$/,
            loader: 'style-loader!css-loader',
-           include: path.join(PATH.src)
-      }, { test: /\.(png|jpg)$/,
-           loader: 'url-loader?limit=8192',
-           include: path.join(PATH.src)
-      }, { test   : /\.(ttf|eot|svg|woff(2))(\?[a-z0-9]+)?$/,
-           loader : 'file-loader'
       }, { test: /\.html$/,
            loader: 'raw-loader'
       }, { test: /\.jade$/,
            loader: 'raw-loader!jade-html-loader',
            include: path.join(PATH.src)
+      }, { test: /.(png|woff(2)?|eot|ttf|svg)(\?[a-z0-9=\.]+)?$/,
+           loader: 'url-loader?limit=100000' 
       }
     ]
   }
