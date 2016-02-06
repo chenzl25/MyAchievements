@@ -243,7 +243,17 @@ describe('Manager test', function() {
 				done();
 			});
 	});
-	it('create group ', function(done) {
+	it('create class fail', function(done) {
+		agent
+			.post('/Mapi/class')
+			.send({name:'class123'})
+			.end(function(err, res) {
+				expect(res.body.error).equal(true);
+				expect(res.body.message).equal('班级名字已存在')
+				done();
+			});
+	});
+	it('create group successfully', function(done) {
 		agent
 			.post('/Mapi/class/'+classId+'/group')
 			.send({name:'group456'})
@@ -253,6 +263,16 @@ describe('Manager test', function() {
 				expect(res.body.groupData).to.has.property('_id');
 				expect(res.body.groupData.classId).equal(classId);
 				groupId = res.body.groupData._id;
+				done();
+			});
+	});
+	it('create group fail', function(done) {
+		agent
+			.post('/Mapi/class/'+classId+'/group')
+			.send({name:'group456'})
+			.end(function(err, res) {
+				expect(res.body.error).equal(true);
+				expect(res.body.message).equal('该小组名已存在于它的班级中')
 				done();
 			});
 	});
@@ -394,7 +414,7 @@ describe('Manager test', function() {
 	it('create group ', function(done) {
 		agent
 			.post('/Mapi/class/'+classId+'/group')
-			.send({name:'group456'})
+			.send({name:'group789'})
 			.end(function(err, res) {
 				expect(res.body.error).equal(false);
 				expect(res.body.groupData).to.be.a('object');
@@ -407,7 +427,6 @@ describe('Manager test', function() {
 		agent
 			.delete('/Mapi/group/'+groupId)
 			.end(function(err, res) {
-				console.log(res.body)
 				expect(res.body.error).equal(false);
 				done();
 			});
@@ -416,7 +435,6 @@ describe('Manager test', function() {
 		agent
 			.get('/Mapi/class/'+classId)
 			.end(function(err, res) {
-				console.log(res.body)
 				expect(res.body.error).equal(false);
 				expect(res.body.classData.groupsId.indexOf(groupId)).equal(-1);
 

@@ -157,7 +157,7 @@ describe('Total test', function() {
 	it('create group ', function(done) {
 		agentManager
 			.post('/Mapi/class/'+classId+'/group')
-			.send({name:'group456'})
+			.send({name:'groupeee'})
 			.end(function(err, res) {
 				expect(res.body.error).equal(false);
 				expect(res.body.groupData).to.be.a('object');
@@ -171,7 +171,7 @@ describe('Total test', function() {
 	it('create group ', function(done) {
 		agentManager
 			.post('/Mapi/class/'+classId+'/group')
-			.send({name:'group789'})
+			.send({name:'groupfff'})
 			.end(function(err, res) {
 				expect(res.body.error).equal(false);
 				expect(res.body.groupData).to.be.a('object');
@@ -194,16 +194,12 @@ describe('Total test', function() {
 				done();
 			});
 	});
-	it('add teacher for class successfully', function(done) {
+	it('add teacher for class fail', function(done) {
 		agentManager
 			.post('/Mapi/class/'+classId+'/teacher/'+teacherTwoId)
 			.end(function(err, res) {
-				expect(res.body.error).equal(false);
-				expect(res.body.classData).to.be.a('object');
-				expect(res.body.classData).to.has.property('_id');
-				expect(res.body.classData._id).equal(classId);
-				expect(res.body.classData.teachersId).to.be.a('array');
-				expect(res.body.classData.teachersId.indexOf(teacherTwoId)).not.equal(-1);
+				expect(res.body.error).equal(true);
+				expect(res.body.message).equal('一个班级最多只能一个教师');
 				done();
 			});
 	});
@@ -258,7 +254,7 @@ describe('Total test', function() {
 	it('create group ', function(done) {
 		agentManager
 			.post('/Mapi/class/'+classId+'/group')
-			.send({name:'group789'})
+			.send({name:'groupddd'})
 			.then((res) => {
 				expect(res.body.error).equal(false);
 				expect(res.body.groupData).to.be.a('object');
@@ -270,7 +266,7 @@ describe('Total test', function() {
 	it('create group ', function(done) {
 		agentManager
 			.post('/Mapi/class/'+classId+'/group')
-			.send({name:'group789'})
+			.send({name:'groupaaa'})
 			.end(function(err, res) {
 				expect(res.body.error).equal(false);
 				expect(res.body.groupData).to.be.a('object');
@@ -282,7 +278,7 @@ describe('Total test', function() {
 	it('create group ', function(done) {
 		agentManager
 			.post('/Mapi/class/'+classId+'/group')
-			.send({name:'group789'})
+			.send({name:'groupbbb'})
 			.end(function(err, res) {
 				expect(res.body.error).equal(false);
 				expect(res.body.groupData).to.be.a('object');
@@ -294,7 +290,7 @@ describe('Total test', function() {
 	it('create group ', function(done) {
 		agentManager
 			.post('/Mapi/class/'+classId+'/group')
-			.send({name:'group789'})
+			.send({name:'groupccc'})
 			.end(function(err, res) {
 				expect(res.body.error).equal(false);
 				expect(res.body.groupData).to.be.a('object');
@@ -985,7 +981,6 @@ describe('Total test', function() {
 		agentManager
 			.get('/Mapi/classs')
 			.then((res) =>{
-				console.log(res.body)
 		    expect(res.body.error).equal(false);
 		    done();
 			});
@@ -994,7 +989,6 @@ describe('Total test', function() {
 		agentManager
 			.get('/Mapi/groups')
 			.then((res) =>{
-				console.log(res.body)
 		    expect(res.body.error).equal(false);
 		    done();
 			});
@@ -1003,7 +997,6 @@ describe('Total test', function() {
 		agentManager
 			.get('/Mapi/users')
 			.then((res) =>{
-				console.log(res.body)
 		    expect(res.body.error).equal(false);
 		    done();
 			});

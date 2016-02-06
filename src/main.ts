@@ -13,5 +13,10 @@ import {ROUTER_PROVIDERS} from 'angular2/router';
 import {UserService} from './app/lib/user.service';
 import {StorageService} from './app/lib/storage.service'
 import {HTTP_PROVIDERS} from 'angular2/http'
+import {ValidateService} from './app/lib/validate.service';
 
-bootstrap(AppComponent, [ROUTER_PROVIDERS, HTTP_PROVIDERS, UserService, StorageService]);
+bootstrap(AppComponent, [ROUTER_PROVIDERS,
+												 HTTP_PROVIDERS,
+												 UserService,
+												 StorageService,
+												 ValidateService]);

@@ -29,7 +29,7 @@ function alreadyLoginMiddleware(req, res, next) {
 
 /* GET home page. */
 router.post('/login', 
-  // alreadyLoginMiddleware,
+  alreadyLoginMiddleware,
   tools.validateMiddleware(validator.validateLogin.bind(validator)), function login(req, res) {
   // res.setHeader('Content-type','application/json');
   debug(req.body);

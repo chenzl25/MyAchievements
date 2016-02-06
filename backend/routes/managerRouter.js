@@ -111,7 +111,7 @@ router.get('/groups', function(req, res) {
 })
 // get all the users
 router.get('/users', function(req, res) {
-  User.find({}).then(
+  User.find({position:{$ne:"manager"}}).then(
     usersData => res.json({error: false, usersData: usersData}),
     errorMessage => res.json({error: true, message: errorMessage})
   )

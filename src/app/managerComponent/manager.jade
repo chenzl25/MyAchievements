@@ -1,77 +1,109 @@
 my-nav([userData]="managerData")
 .container-fluid
   .row
-    .col-md-4
-      p.top-title.col-md-9.text-primary Class
+    .col-sm-4
+      p.top-title.col-sm-9.text-primary Class
       button.btn.btn-default(type="button", (click)="onClickRouteToClassList()")
         span.glyphicon.glyphicon-align-justify(aria-hidden="true")
       button.btn.btn-default(type="button",  (click)="onClickRouteToClassAdd()")
         span.glyphicon.glyphicon-plus(aria-hidden="true")
-    .col-md-4
-      p.top-title.col-md-9.text-primary Group
+    .col-sm-4
+      p.top-title.col-sm-9.text-primary Group
       button.btn.btn-default(type="button",  (click)="onClickRouteToGroupList()")
         span.glyphicon.glyphicon-align-justify(aria-hidden="true")
       button.btn.btn-default(type="button",  (click)="onClickRouteToGroupAdd()")
         span.glyphicon.glyphicon-plus(aria-hidden="true")
-    .col-md-4
-      p.top-title.col-md-9.text-primary User
+    .col-sm-4
+      p.top-title.col-sm-9.text-primary User
       button.btn.btn-default(type="button",  (click)="onClickRouteToUserList()")
         span.glyphicon.glyphicon-align-justify(aria-hidden="true")
       button.btn.btn-default(type="button",  (click)="onClickRouteToUserAdd()")
         span.glyphicon.glyphicon-plus(aria-hidden="true")
   .row
-    .col-md-4.class-list-container([hidden]="!routeToClassList")
-      ul.class-list
-          li.class-item(*ngFor="#classItem of classList") {{classItem}}
-    .col-md-4.class-register-container([hidden]="routeToClassList")
-      form.class-register-form
+    .col-sm-4.class-list-container([hidden]="!routeToClassList")
+      ol.class-list.list-group
+        li.class-item.list-group-item(draggable="true",(dragstart)="onClassDragStart($event, classItem)",*ngFor="#classItem of classList")
+          .row
+            .col-sm-4 {{classItem?.name}}
+            .col-sm-4.col-sm-offset-4 {{'小组 : ' + classItem?.groupsId?.length}}
+          .row
+            .col-sm-4 {{'教师 : ' + classItem?.teachersId?.length}}
+            .col-sm-4.col-sm-offset-4 {{'学生 : ' + (classItem | total_students_of_class:groupList)}}
+      .messages-container
+        ul.messages-list
+          li.text-warning(*ngFor="#message of getClassAllMessages") {{message}}
+    .col-sm-4.class-register-container([hidden]="routeToClassList")
+      form.class-register-form((ngSubmit)="onClickRegisterClass()")
         .form-group
           label(for="class-name")
-          input.form-control(id="class-name", placeholder="class name")
+          input.form-control([(ngModel)]="inputClassName",id="class-name", placeholder="class name")
         button.btn.btn-primary.btn-block(type="submit") Register
       .messages-container
         ul.messages-list
-            li.text-warning(*ngFor="#message of registerClassMessages") {{message}}
-    .col-md-4.group-list-container([hidden]="!routeToGroupList")
-      ul.group-list
-          li.group-item(*ngFor="#groupItem of groupList") {{groupItem}}
-    .col-md-4.group-register-container([hidden]="routeToGroupList")
-      form.group-register-form
-        .form-group
-          label(for="group-name")
-          input.form-control(id="group-name", placeholder="group name")
-        button.btn.btn-primary.btn-block(type="submit") Register
+          li([ngClass]="{'text-warning':!registerClassSuccess, 'text-success':registerClassSuccess}" ,*ngFor="#message of registerClassMessages") {{message}}
+    .col-sm-4.group-list-container([hidden]="!routeToGroupList")
+      ol.group-list.list-group
+        li.group-item.list-group-item(draggable="true",(dragstart)="onGroupDragStart($event, groupItem)",*ngFor="#groupItem of groupList")
+          .row
+            .col-sm-4 {{groupItem?.name}}
+            .col-sm-5.col-sm-offset-3 {{'属于班级 : ' + (groupItem | class_name_of_group_pipe:classList)}}
+          .row
+            .col-sm-4 {{'助教 : ' + groupItem?.assistantsId?.length}}
+            .col-sm-5.col-sm-offset-3 {{'学生 : ' + groupItem?.studentsId?.length}}
       .messages-container
         ul.messages-list
-            li.text-warning(*ngFor="#message of registerGroupMessages") {{message}}
-    .col-md-4.user-list-container([hidden]="!routeToUserList")
-      ul.user-list
-          li.user-item(*ngFor="#userItem of userList") {{userItem}}
-    .col-md-4.user-register-container([hidden]="routeToUserList")
-      form.user-register-form
-        .form-group
-          label(for="user-account")
-          input.form-control(id="user-account", placeholder="user account")
-        .form-group
-          label(for="user-password")
-          input.form-control(id="user-password", placeholder="user password")
-        .form-group
-          label(for="user-name")
-          input.form-control(id="user-name", placeholder="user name")
-        .form-group
-          label(for="user-email")
-          input.form-control(id="user-email", placeholder="user email")
+          li(*ngFor="#message of getGroupAllMessages") {{message}}
+    .col-sm-4.group-register-container([hidden]="routeToGroupList")
+      form.group-register-form((ngSubmit)="onClickRegisterGroup()")
         .form-group
           label(for="user-position")
-          select.form-control(id="user-position")
+          select.form-control([ngModel]="inputGroupClassName",(ngModelChange)="findInputGroupClassIdByClassName($event)",id="user-position")
+            option(*ngFor="#classItem of classList") {{classItem?.name}}
+        .form-group
+          label(for="group-name")
+          input.form-control([(ngModel)]="inputGroupName",id="group-name", placeholder="group name")
+        button.btn.btn-primary.btn-block(type="submit") Register
+      .messages-container
+        ul.messages-list
+          li.text-warning([ngClass]="{'text-warning':!registerGroupSuccess, 'text-success':registerGroupSuccess}" ,*ngFor="#message of registerGroupMessages") {{message}}
+    .col-sm-4.user-list-container([hidden]="!routeToUserList")
+      ol.user-list.list-group
+        li.user-item.list-group-item(draggable="true",(dragstart)="onUserDragStart($event, userItem)",*ngFor="#userItem of userList")
+          .row
+            .col-sm-3 {{userItem?.name}}
+            .col-sm-2 {{userItem?.position | i18n:"chinese"}}
+            .col-sm-5.col-sm-offset-2 {{'属于小组 : ' + (userItem | group_name_of_student_pipe:groupList)}}
+      .messages-container
+        ul.messages-list
+          li(*ngFor="#message of getUserAllMessages") {{message}}
+    .col-sm-4.user-register-container([hidden]="routeToUserList")
+      form.user-register-form((ngSubmit)="onClickRegisterUser()")
+        .form-group
+          label(for="user-account")
+          input.form-control([(ngModel)]="inputUserAccount",id="user-account", placeholder="user account")
+        .form-group
+          label(for="user-password")
+          input.form-control([(ngModel)]="inputUserPassword",id="user-password", placeholder="user password")
+        .form-group
+          label(for="user-name")
+          input.form-control([(ngModel)]="inputUserName",id="user-name", placeholder="user name")
+        .form-group
+          label(for="user-email")
+          input.form-control([(ngModel)]="inputUserEmail",id="user-email", placeholder="user email")
+        .form-group
+          label(for="user-position")
+          select.form-control([(ngModel)]="inputUserPosition",id="user-position")
             option student
             option assistant
             option teacher
         button.btn.btn-primary.btn-block(type="submit") Register
       .messages-container
         ul.messages-list
-            li.text-warning(*ngFor="#message of registerUserMessages") {{message}}
+          li.text-warning([ngClass]="{'text-warning':!registerUserSuccess, 'text-success':registerUserSuccess}" ,*ngFor="#message of registerUserMessages") {{message}}
   .row
-    .col-md-4.classs-container
-    .col-md-4.groups-container
-    .col-md-4.users-container
+    .grabage-collection
+      .icon((drop)="onGCDrop($event)",(dragover)="onGCDragOver($event)",(dragenter)="onGCDragEnter($event)",(dragleave)="onGCDragLeave($event)",[ngClass]="{'bg-warning':GCfail, 'bg-success':GCsuccess,'drag-over':stateGCDragOver}")
+        .lid
+        .lidcap
+        .bin
+      

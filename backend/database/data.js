@@ -230,22 +230,21 @@ ClassSchema.statics.findById = function(classId) {
 							.then(classData => detectClassExist(classData));
 }
 ClassSchema.statics.create = function(className) {
-  return Class({name:className})
-          .save()
-          .then(
-            (classData) => Promise.resolve(classData),
-            (err) => {
-              debug(err);
-              return Promise.reject('创建班级失败');
-            }
-           )
+  return Class.find({name: className})
+              .count()
+              .then(countNumber => countNumber === 0? Class({name:className}).save(): Promise.reject('班级名字已存在'))
+              .then(
+                classData => Promise.resolve(classData),
+                err => errFilter(err, '创建班级失败')
+              )
 }
 ClassSchema.statics.addTeacher = function(classId, teacherId) {
   var outsideClass
   return Class.findById(classId)
-              .then(classData => detectClassExist(classData))
               .then(classData => {
                 outsideClass = classData;
+                if (classData.teachersId.length !== 0)
+                  return Promise.reject('一个班级最多只能一个教师');
                 return User.findTeacherById(teacherId);
               })
               .then(teacherData => teacherData.addClass(outsideClass._id))
@@ -274,7 +273,6 @@ ClassSchema.statics.delete = function(classId) {  // I haven't delete the assign
                 err => errFilter(err, '删除班级失败')
               )
 }
-
 //-------------------------------------------------------------------
 
 //Group--------------------------------------------------------------
@@ -369,8 +367,11 @@ GroupSchema.statics.create = function(classId, groupName) {
 	return Class.findById(classId)
 							.then(classData => {
 								outsideClass = classData;
-								return Group({name: groupName, classId: classId}).save()
+                return classData;
+								// return Group({name: groupName, classId: classId}).save()
 							})
+              .then(classData => Group.find({classId:classData._id, name:groupName}).count())
+              .then(countNumber => countNumber === 0? Group({name: groupName, classId: classId}).save(): Promise.reject('该小组名已存在于它的班级中'))
 							.then(groupData => {
 								outsideGroup = groupData;
                 return outsideClass.addGroup(groupData._id);

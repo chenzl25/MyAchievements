@@ -25,16 +25,6 @@ var validator = {
 			emptyMessage: '权限为空',
 			pattern: /^(teacher|student|assistant)$/
 		},
-		homeworkMessage: {
-			errorMessage: '作业附言长度为2-500个字符',
-			emptyMessage: '作业附言内容为空',
-			pattern: /.{2,500}/
-		},
-		reviewMessage: {
-			errorMessage: '评论长度为2-500个字符',
-			emptyMessage: '评论内容为空',
-			pattern: /.{2,500}/
-		},
 		className: {
 			errorMessage: '班级名字长度为2-20个字符',
 			emptyMessage: '班级名字为空',

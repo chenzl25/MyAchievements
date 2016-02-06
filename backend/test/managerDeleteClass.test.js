@@ -176,16 +176,12 @@ describe('Manager delete', function() {
 				done();
 			});
 	});
-	it('add teacher for class successfully', function(done) {
+	it('add teacher for class fail', function(done) {
 		agent
 			.post('/Mapi/class/'+classId+'/teacher/'+teacherTwoId)
 			.end(function(err, res) {
-				expect(res.body.error).equal(false);
-				expect(res.body.classData).to.be.a('object');
-				expect(res.body.classData).to.has.property('_id');
-				expect(res.body.classData._id).equal(classId);
-				expect(res.body.classData.teachersId).to.be.a('array');
-				expect(res.body.classData.teachersId.indexOf(teacherTwoId)).not.equal(-1);
+				expect(res.body.error).equal(true);
+				expect(res.body.message).equal('一个班级最多只能一个教师');
 				done();
 			});
 	});
