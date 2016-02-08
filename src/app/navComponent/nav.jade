@@ -1,18 +1,20 @@
 nav.navbar.navbar-default
-	.container-fluid
-		a.navbar-brand() MyAchievements
-		ul.nav.navbar-nav.navbar-right
-			li
-				a() Class
-			li
-				a() Group
-			li.dropdown
-				a.dropdown-toggle(data-toggle="dropdown",role="button",aria-haspopup="true",aria-expanded="false") {{userData?.name}}
-					span.caret
-				ul.dropdown-menu
-					li
-						a(href="/changePassword") 修改密码
-					li.divider(role="separator")
-					li
-						a((click)="onQuit()") 退出
+  .container-fluid
+    a.navbar-brand() MyAchievements
+    ul.nav.navbar-nav.navbar-right
+      li
+        a Class
+      li
+        a Group
+      li(*ngIf="userData?.position === 'manager'") 
+        a 管理员 
+      li.dropdown
+        a.dropdown-toggle(data-toggle="dropdown",role="button",aria-haspopup="true",aria-expanded="false") {{userData?.name}}
+          span.caret
+        ul.dropdown-menu
+          li
+            a(href="/changePassword") 修改密码
+          li.divider(role="separator")
+          li
+            a((click)="onQuit()") 退出
 

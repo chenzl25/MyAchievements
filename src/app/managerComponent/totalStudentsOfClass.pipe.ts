@@ -2,7 +2,7 @@ import {Pipe, PipeTransform} from 'angular2/core';
 import {Class, Group, User} from '../lib/interface';
 @Pipe({
   name: 'total_students_of_class',
-  // pure: false
+  pure: false
 })
 export class TotalStudentsOfClassPipe implements PipeTransform{
   private totalStudentNumber: number;

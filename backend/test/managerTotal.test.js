@@ -227,8 +227,9 @@ describe('Manager test', function() {
 		agent
 				.delete('/Mapi/user/4444444')
 				.end(function(err, res) {
+					console.log(res.body)
 					expect(res.body.error).equal(true);
-					expect(res.body.message).equal('删除用户失败,该用户不存在')
+					expect(res.body.message).equal('该用户不存在')
 					done();
 				});
 	});
@@ -335,6 +336,15 @@ describe('Manager test', function() {
 			.end(function(err, res) {
 				expect(res.body.error).equal(false);
 				expect(res.body.groupData.assistantsId).to.has.length(1);
+				done();
+			});
+	});
+	it('add assistant for group fail', function(done) {
+		agent
+			.post('/Mapi/group/'+groupId+'/assistant/'+assistantId)
+			.end(function(err, res) {
+				expect(res.body.error).equal(true);
+				expect(res.body.message).equal('一个小组最多一个助教');
 				done();
 			});
 	});

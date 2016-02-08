@@ -14,8 +14,10 @@ var mongoose = require('mongoose');
 
 var agent;  // use this to the thing needed auth
 var classId; 
+var classAnotherId;
 var groupOneId;
 var groupTwoId;
+var groupAnotherId;
 var teacherOneId;
 var teacherTwoId
 var studentOneId;
@@ -138,6 +140,16 @@ describe('Manager delete', function() {
 				done();
 			});
 	});
+	it('create classAnother ', function(done) {
+		agent
+			.post('/Mapi/class')
+			.send({name:'class456'})
+			.end(function(err, res) {
+				expect(res.body.error).equal(false);
+				classAnotherId = res.body.classData._id;
+				done();
+			});
+	});
 	it('create group ', function(done) {
 		agent
 			.post('/Mapi/class/'+classId+'/group')
@@ -160,6 +172,18 @@ describe('Manager delete', function() {
 				expect(res.body.groupData).to.be.a('object');
 				expect(res.body.groupData).to.has.property('_id');
 				groupTwoId = res.body.groupData._id;
+				done();
+			});
+	});
+	it('create groupAnother ', function(done) {
+		agent
+			.post('/Mapi/class/'+classAnotherId+'/group')
+			.send({name:'group999'})
+			.end(function(err, res) {
+				expect(res.body.error).equal(false);
+				expect(res.body.groupData).to.be.a('object');
+				expect(res.body.groupData).to.has.property('_id');
+				groupAnotherId = res.body.groupData._id;
 				done();
 			});
 	});
@@ -203,6 +227,15 @@ describe('Manager delete', function() {
 				done();
 			});
 	});
+	it('add student for group fail', function(done) {
+		agent
+			.post('/Mapi/group/'+groupTwoId+'/student/'+studentOneId)
+			.end(function(err, res) {
+				expect(res.body.error).equal(true);
+				expect(res.body.message).equal('该学生已经有属于的小组了');
+				done();
+			});
+	});
 	it('add student for group successfully', function(done) {
 		agent
 			.post('/Mapi/group/'+groupTwoId+'/student/'+studentTwoId)
@@ -216,7 +249,6 @@ describe('Manager delete', function() {
 		agent
 			.post('/Mapi/group/'+groupOneId+'/assistant/'+assistantOneId)
 			.end(function(err, res) {
-				console.log(res.body)
 				expect(res.body.error).equal(false);
 				expect(res.body.groupData.assistantsId).to.has.length(1);
 				done();
@@ -226,9 +258,17 @@ describe('Manager delete', function() {
 		agent
 			.post('/Mapi/group/'+groupTwoId+'/assistant/'+assistantTwoId)
 			.end(function(err, res) {
-				console.log(res.body)
 				expect(res.body.error).equal(false);
 				expect(res.body.groupData.assistantsId).to.has.length(1);
+				done();
+			});
+	});
+	it('add assistant for group fail', function(done) {
+		agent
+			.post('/Mapi/group/'+groupAnotherId+'/assistant/'+assistantTwoId)
+			.end(function(err, res) {
+				expect(res.body.error).equal(true);
+				expect(res.body.message).equal('助教的小组必须属于同一个班级');
 				done();
 			});
 	});
@@ -236,7 +276,6 @@ describe('Manager delete', function() {
 		agent
 			.get('/Mapi/class/'+classId)
 			.end(function(err, res) {
-				console.log(res.body)
 				expect(res.body.error).equal(false);
 				expect(res.body.classData).to.be.a('object');
 				expect(res.body.classData).to.has.property('_id');
@@ -244,78 +283,109 @@ describe('Manager delete', function() {
 				done();
 			});
 	});
-	it('search the class successfully', function(done) {
+	it('delete teacherOne in the class', function(done) {
+		agent
+			.delete('/Mapi/user/'+'222222')
+			.end(function(err, res) {
+				expect(res.body.error).equal(false);
+				// expect(res.body.userData.classsId.indexOf(classId)).equal(-1);
+				done();
+			});
+	});
+	it('search the class successfully and ensure the teacherOne has been removed from the class', function(done) {
 		agent.get('/Mapi/class/'+classId)
 				 .end(function(err, res) {
-				 	console.log(res.body);
+				 	console.log(res.body)
+				 	expect(res.body.error).equal(false);
+				 	expect(res.body.classData.teachersId.indexOf(teacherOneId)).equal(-1);
+				 	done();
+				 })
+	})
+	it('search groupOne successfully', function(done) {
+		agent
+			.get('/Mapi/group/'+groupOneId)
+			.end(function(err, res) {
+				console.log(res.body)
+				expect(res.body.error).equal(false);
+				expect(res.body.groupData.assistantsId).to.has.length(1);
+				done();
+			});
+	});
+	it('delete the assistantOne successfully', function(done) {
+		agent.delete('/Mapi/user/'+'999999')
+				 .end(function(err, res) {
+				 	console.log(res.body)
 				 	expect(res.body.error).equal(false);
 				 	done();
 				 })
 	})
+	it('delete the assistantOne successfully', function(done) {
+		agent.delete('/Mapi/user/'+'888888')
+				 .end(function(err, res) {
+				 	console.log(res.body)
+				 	expect(res.body.error).equal(false);
+				 	done();
+				 })
+	})
+	it('search groupOne successfully', function(done) {
+		agent
+			.get('/Mapi/group/'+groupOneId)
+			.end(function(err, res) {
+				console.log(res.body)
+				expect(res.body.error).equal(false);
+				expect(res.body.groupData.assistantsId).to.has.length(0);
+				done();
+			});
+	});
 	it('delete the class successfully', function(done) {
 		agent.delete('/Mapi/class/'+classId)
 				 .end(function(err, res) {
-				 	console.log(res.body);
+				 	console.log(res.body)
 				 	expect(res.body.error).equal(false);
 				 	done();
 				 })
 	})
-	// it('search member in the group(or class) has been deleted, to see the groupOneId', function(done) {
-	// 	agent
-	// 		.get('/Mapi/user/'+studentOneId)
-	// 		.end(function(err, res) {
-	// 			console.log(res.body)
-	// 			console.log(groupOneId)
-	// 			expect(res.body.error).equal(false);
-
-	// 			expect(res.body.userData.groupsId.indexOf(groupOneId)).equal(-1);
-	// 			done();
-	// 		});
-	// });
-	// it('search member in the group(or class) has been deleted, to see the groupOneId', function(done) {
-	// 	agent
-	// 		.get('/Mapi/user/'+assistantOneId)
-	// 		.end(function(err, res) {
-	// 			expect(res.body.error).equal(false);
-	// 			expect(res.body.userData.groupsId.indexOf(groupOneId)).equal(-1);
-	// 			done();
-	// 		});
-	// });
-	// it('search teacher in the class has been deleted, to see the groupOneId', function(done) {
-	// 	agent
-	// 		.get('/Mapi/user/'+teacherOneId)
-	// 		.end(function(err, res) {
-	// 			expect(res.body.error).equal(false);
-	// 			expect(res.body.userData.classsId.indexOf(classId)).equal(-1);
-	// 			done();
-	// 		});
-	// });
-	// it('search member in the group(or class) has been deleted, to see the groupTwoId', function(done) {
-	// 	agent
-	// 		.get('/Mapi/user/'+studentTwoId)
-	// 		.end(function(err, res) {
-	// 			expect(res.body.error).equal(false);
-	// 			expect(res.body.userData.groupsId.indexOf(groupOneId)).equal(-1);
-	// 			done();
-	// 		});
-	// });
-	// it('search member in the group(or class) has been deleted, to see the groupTwoId', function(done) {
-	// 	agent
-	// 		.get('/Mapi/user/'+assistantTwoId)
-	// 		.end(function(err, res) {
-	// 			expect(res.body.error).equal(false);
-	// 			expect(res.body.userData.groupsId.indexOf(groupOneId)).equal(-1);
-	// 			done();
-	// 		});
-	// });
-	// it('search teacher in the class has been deleted, to see the groupTwoId', function(done) {
-	// 	agent
-	// 		.get('/Mapi/user/'+teacherTwoId)
-	// 		.end(function(err, res) {
-	// 			expect(res.body.error).equal(false);
-	// 			expect(res.body.userData.classsId.indexOf(classId)).equal(-1);
-	// 			done();
-	// 		});
-	// });
+	it('search student in the group(or class) has been deleted', function(done) {
+		agent
+			.get('/Mapi/user/'+studentOneId)
+			.end(function(err, res) {
+				expect(res.body.error).equal(true);
+				done();
+			});
+	});
+	it('search assistant in the group(or class) has been deleted', function(done) {
+		agent
+			.get('/Mapi/user/'+assistantOneId)
+			.end(function(err, res) {
+				expect(res.body.error).equal(true);
+				done();
+			});
+	});
+	it('search teacher in the class has been deleted', function(done) {
+		agent
+			.get('/Mapi/user/'+teacherOneId)
+			.end(function(err, res) {
+				expect(res.body.error).equal(true);
+				done();
+			});
+	});
+	it('search member in the group(or class) has been deleted, to see the groupTwoId', function(done) {
+		agent
+			.get('/Mapi/user/'+studentTwoId)
+			.end(function(err, res) {
+				expect(res.body.error).equal(false);
+				expect(res.body.userData.groupsId.indexOf(groupOneId)).equal(-1);
+				done();
+			});
+	});
+	it('search member in the group(or class) has been deleted, to see the groupTwoId', function(done) {
+		agent
+			.get('/Mapi/user/'+assistantTwoId)
+			.end(function(err, res) {
+				expect(res.body.error).equal(false);
+				expect(res.body.userData.groupsId.indexOf(groupOneId)).equal(-1);
+				done();
+			});
+	});
 });
 

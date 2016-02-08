@@ -224,6 +224,10 @@ ClassSchema.methods.linkAssignments = function() {
                   return Promise.resolve(this)
                 })
 }
+ClassSchema.methods.removeTeacherById = function(teacherId) {
+  this.teachersId = this.teachersId.filter(v => v.toString() !== teacherId.toString());
+  return Promise.resolve(this);
+}
   //static
 ClassSchema.statics.findById = function(classId) {
 	return Class.findOne({_id: classId})
@@ -356,6 +360,14 @@ GroupSchema.methods.getToReviewHomeworksByAssignmentId = function(assignmentId) 
                       return Promise.resolve(toReviewHomeworksData)
                    })
 }
+GroupSchema.methods.removeAssistantById = function(assistantId) {
+  this.assistantsId = this.assistantsId.filter(v => v.toString() !== assistantId.toString());
+  return Promise.resolve(this);
+}
+GroupSchema.methods.removeStudentById = function(studentId) {
+  this.studentsId = this.studentsId.filter(v => v.toString() !== studentId.toString());
+  return Promise.resolve(this);
+}
   //statics
 GroupSchema.statics.findById = function(groupId) {
   return Group.findOne({_id: groupId})
@@ -404,6 +416,8 @@ GroupSchema.statics.addAssistant = function(groupId, assistantId) {
   return Group.findById(groupId)
               .then(groupData => {
                 outsideGroup = groupData;
+                if(groupData.assistantsId.length !== 0)
+                  return Promise.reject('一个小组最多一个助教')
                 return User.findAssistantById(assistantId);
               })
               // .then(assistantData => assistantData.updateProperty({groupId: outsideGroup._id}))
@@ -467,6 +481,25 @@ UserSchema.methods.updateProperty = function(updater) {
   return Promise.resolve(this);
 }
 UserSchema.methods.addGroup = function(groupId) {
+  if (this.position === 'student' && this.groupsId.length !== 0)
+    return Promise.reject('该学生已经有属于的小组了');
+  if (this.position === 'assistant' && this.groupsId.length !== 0) {
+    var toCompareGroupId = this.groupsId[0];
+    var classIdOfToCompareGroupPromise = Group.findById(toCompareGroupId)
+                                              .then(groupData => groupData.classId);
+    var classIdOfToAddGroupPromise = Group.findById(groupId)
+                                          .then(groupData => groupData.classId);
+    return Promise.all([classIdOfToCompareGroupPromise, classIdOfToAddGroupPromise])
+                  .then(values => {
+                    if(values[0].toString() === values[1].toString()) {
+                      this.groupsId.push(groupId);
+                      return Promise.resolve(this);
+                    }
+                    return Promise.reject('助教的小组必须属于同一个班级');
+                  },
+                  err => errFilter(err, '对比两小组班级时出错了'))
+  }
+
   this.groupsId.push(groupId);
   return Promise.resolve(this);
 }
@@ -644,6 +677,60 @@ UserSchema.methods.teacherGetToReviewHomeworks = function(assignmentId) {
                     return Promise.all(homeworksDataPromise)
                   })
 }
+UserSchema.methods.beforeDeleteUser = function() {
+  switch(this.position) {
+    case 'teacher':
+      return this.beforeDeleteTeacher();
+      break;
+    case 'assistant':
+      return this.beforeDeleteAssistant();
+      break;
+    case 'student':
+      return this.beforeDeleteStudent();
+      break;
+    default:
+      return Promise.reject('Server Error!');
+  }
+}
+UserSchema.methods.beforeDeleteTeacher = function() {
+  if(this.classsId.length === 0)
+    return Promise.resolve('删除教师预处理成功');
+  var classsId = this.classsId;
+  var classsDataPromise = classsId.map(classId =>
+    Class.findById(classId)
+         .then(classData => classData.removeTeacherById(this._id))
+         .then(classData => classData.save())
+  )
+  return Promise.all(classsDataPromise)
+                .then(() => "删除教师预处理成功",
+                      () => "删除教师预处理失败")
+}
+UserSchema.methods.beforeDeleteAssistant = function() {
+  if(this.groupsId.length === 0)
+    return Promise.resolve('删除助教预处理成功');
+  var groupsId = this.groupsId;
+  var groupsDataPromise = groupsId.map(groupId =>
+    Group.findById(groupId)
+         .then(groupData => groupData.removeAssistantById(this._id))
+         .then(groupData => groupData.save())
+  )
+  return Promise.all(groupsDataPromise)
+                .then(() => "删除助教预处理成功",
+                      () => "删除助教预处理失败")
+}
+UserSchema.methods.beforeDeleteStudent = function() {
+  if(this.groupsId.length === 0)
+    return Promise.resolve('删除学生预处理成功');
+  var groupsId = this.groupsId;
+  var groupsDataPromise = groupsId.map(groupId =>
+    Group.findById(groupId)
+         .then(groupData => groupData.removeStudentById(this._id))
+         .then(groupData => groupData.save())
+  )
+  return Promise.all(groupsDataPromise)
+                .then(() => "删除学生预处理成功",
+                      () => "删除学生预处理失败")
+}
   // static****
 UserSchema.statics.findById = function(userId) {
   return User.findOne({_id: userId})
@@ -712,16 +799,21 @@ UserSchema.statics.alreadyLogin = function(account) {
               )
 }
 UserSchema.statics.delete = function (account) {
-    return this.remove({account: account}).then(
-	    (removeResult) => {
-	    	if (removeResult.result.ok == 1 && removeResult.result.n == 1) {
-	    		return Promise.resolve('成功删除用户')   //need to delete all the things coresponsed to that user
-	    	} else {
-	    		return Promise.reject('删除用户失败,该用户不存在')
-	    	}
-	    },
-      err => errFilter(err, '删除用户失败')
-	  )
+  return this.findOne({account: account})
+             .then(userData => detectUserExist(userData))
+             .then(userData => userData.beforeDeleteUser())
+             .then(() => {
+                return this.remove({account: account}).then(
+                  (removeResult) => {
+                  	if (removeResult.result.ok == 1 && removeResult.result.n == 1) {
+                  		return Promise.resolve('成功删除用户')   //need to delete all the things coresponsed to that user
+                  	} else {
+                  		return Promise.reject('删除用户失败,该用户不存在')
+                  	}
+                  },
+                  err => errFilter(err, '删除用户失败')
+                )
+             })
 };
 UserSchema.statics.studentGetGroup = function(studentId) {
   return User.findStudentById(studentId)

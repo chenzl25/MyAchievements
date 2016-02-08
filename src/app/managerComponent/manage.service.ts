@@ -90,18 +90,49 @@ export class ManageService {
     let deleteUserUrl = `proxy/Mapi/user/${userAccount}`;
     return this.http.delete(deleteUserUrl, this.options)
                     .toPromise()
+                    .then(res => res.json())
+                    .then(res => res.error? Promise.reject(res.message):res.message)
                     .catch(err => this.errFilter(err));
   }
   deleteGroup(groupId: string):Promise<any>  {
     let deleteGroupUrl = `proxy/Mapi/group/${groupId}`;
     return this.http.delete(deleteGroupUrl, this.options)
                     .toPromise()
+                    .then(res => res.json())
+                    .then(res => res.error? Promise.reject(res.message):res.message)
                     .catch(err => this.errFilter(err));
   }
   deleteClass(classId: string):Promise<any>  {
     let deleteClassUrl = `proxy/Mapi/class/${classId}`;
     return this.http.delete(deleteClassUrl, this.options)
                     .toPromise()
+                    .then(res => res.json())
+                    .then(res => res.error? Promise.reject(res.message):res.message)
+                    .catch(err => this.errFilter(err));
+  }
+  addTeacherToClass(classId: string, teacherId: string):Promise<any> {
+    let addTeacherToClassUrl = `proxy/Mapi/class/${classId}/teacher/${teacherId}`;
+    return this.http.post(addTeacherToClassUrl, '', this.options)
+                    .toPromise()
+                    .then(res => res.json())
+                    .then(res => res.error? Promise.reject(res.message):res.classData)
+                    .catch(err => this.errFilter(err));
+  }
+
+  addAssistantToGroup(groupId: string, assistantId: string):Promise<any> {
+    let addAssistantToGroupUrl = `proxy/Mapi/group/${groupId}/assistant/${assistantId}`;
+    return this.http.post(addAssistantToGroupUrl, '', this.options)
+                    .toPromise()
+                    .then(res => res.json())
+                    .then(res => res.error? Promise.reject(res.message):res.groupData)
+                    .catch(err => this.errFilter(err));
+  }
+  addStudentToGroup(groupId: string, studentId: string):Promise<any> {
+    let addStudentToGroupUrl = `proxy/Mapi/group/${groupId}/student/${studentId}`;
+    return this.http.post(addStudentToGroupUrl, '', this.options)
+                    .toPromise()
+                    .then(res => res.json())
+                    .then(res => res.error? Promise.reject(res.message):res.groupData)
                     .catch(err => this.errFilter(err));
   }
   private errFilter(err: any, finalErrorMessage = 'Server Error!'): any {

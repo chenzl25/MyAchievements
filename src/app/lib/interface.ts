@@ -59,7 +59,8 @@ export  interface Group {
   studentsId: ObjectId[];
   toReviewGroupId: ObjectId,
   LINK_assistants: any[],  //only for get to link other datas
-  LINK_students: any[]
+  LINK_students: any[],
+  indicate: boolean; // only in the front-end run-time
 }
 export  interface Class {
   _id: ObjectId;
@@ -70,7 +71,8 @@ export  interface Class {
   teachersId: ObjectId[];
   LINK_assignments: any[],  //only for get to link other datas
   LINK_teachers: any[],
-  LINK_groups: any[]
+  LINK_groups: any[],
+  indicate: boolean; // only in the front-end run-time
 }
 export interface User {
   _id: ObjectId;
