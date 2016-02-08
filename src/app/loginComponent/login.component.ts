@@ -34,7 +34,7 @@ export class LoginComponent implements OnInit {
 		this.storeAccordingToRemember();
 		this.loginService.login(this.account, this.password)
 										 .then(() => this.storageService.setQuit(false))
-										 .catch(errorMessages => { this.messages = errorMessages });
+										 .catch(errorMessages => { this.messages = errorMessages;});
 	}
 	onClickRemember() {
 		this.remember = !this.remember;

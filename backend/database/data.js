@@ -30,7 +30,8 @@ var HomeworkSchema = new mongoose.Schema({
   LINK_review: {type:Object, default:null},  // only one. be used to check update or create review.
                   // reviewSchema
   LINK_assignment: {type:Object, default:null},
-                  // {name:assignmentData.name,
+                  // {_id: assignmentData._id
+                  //  name:assignmentData.name,
                   //  state:assignmentData.state,
                   //  from: assignmentData.from,
                   //  end: assignmentData.end,
@@ -46,8 +47,8 @@ var UserSchema = new mongoose.Schema({
   classsId: [ObjectId],   // teacher may have serval class
   groupsId: [ObjectId],   //student has only one groupsId
   LINK_homeworks: [HomeworkSchema],           
-  LINK_group: {type: Object, default: null},  // 
-  LINK_class: {type: Object, default: null},  // 
+  LINK_group: {type: Object, default: null},  // if assistant {names:[]} else {name:string}
+  LINK_class: {type: Object, default: null},  // if teacher {names:[]} else {name:string}
   LINK_assignments: {type: Object, default: null},  // for teacher
 });
 
@@ -218,7 +219,8 @@ ClassSchema.methods.linkAssignments = function() {
                       name: assignmentsData[i].name,
                       state: assignmentsData[i].state,
                       from: assignmentsData[i].from,
-                      end: assignmentsData[i].end
+                      end: assignmentsData[i].end,
+                      link: assignmentsData[i].link
                     })
                   }
                   return Promise.resolve(this)
@@ -595,24 +597,49 @@ UserSchema.methods.accordingToPositionLink = function() {
                    .then(groupData => Class.findById(groupData.classId)
                                            .then(classData => this.updateProperty({LINK_group:{name:groupData.name, toReviewGroupId:groupData.toReviewGroupId},LINK_class:{name:classData.name}}))
                    )
-  else if (this.position === 'assistant')
+  else if (this.position === 'assistant') {
     if(this.groupsId.length === 0)
       return Promise.resolve(this)
     else
       return Group.findById(this.groupsId[0])
                   .then(groupData => Class.findById(groupData.classId))
                   .then(classData => classData.linkAssignments())
-                  .then(classData => this.updateProperty({LINK_class: classData}))
-                  .then(() => this)
-  else if (this.position === 'teacher')
+                  .then(classData => this.updateProperty({LINK_class:{name:classData.name},LINK_assignments:classData.LINK_assignments})) // To get all the 
+                  .then(() => this.linkGroupsName())
+                  .then(() => this,
+                        err => errFilter(err, '助教LINK错误'))
+  }
+  else if (this.position === 'teacher') {
     if (this.classsId.length === 0)
       return Promise.resolve(this)
     else
       return Class.findById(this.classsId[0])
                   .then(classData => classData.linkAssignments())
                   .then(classData => this.updateProperty({LINK_assignments:classData.LINK_assignments}))
+                  .then(() => this.linkClasssName())
+                  .then(() => this,
+                        err => errFilter(err, '教师LINK错误'))
+  }
   else
     return Promise.resolve(this)
+}
+UserSchema.methods.linkClasssName = function() {
+  var classsId = this.classsId;
+  classsNamePromise = classsId.map(classId =>
+    Class.findById(classId)
+         .then(classData => classData.name)
+  )
+  return Promise.all(classsNamePromise)
+                .then(classsName => this.updateProperty({LINK_class: {names: classsName}}));
+}
+UserSchema.methods.linkGroupsName = function() {
+  var groupsId = this.groupsId;
+  groupsNamePromise = groupsId.map(groupId =>
+    Group.findById(groupId)
+         .then(groupData => groupData.name)
+  )
+  return Promise.all(groupsNamePromise)
+                .then(groupsName => this.updateProperty({LINK_group: {names: groupsName}}));
 }
 UserSchema.methods.assistantGetToReviewHomeworks = function(assignmentId) {
   var groupsId = this.groupsId;
@@ -885,6 +912,11 @@ AssignmentSchema.methods.updateProperty = function(updater) {
   return Promise.resolve(this);
 }
 AssignmentSchema.methods.checkState = function() {
+  // attention here from and end is a string !!!
+  // but still ok,
+  // because the length of the Date string are same
+  if (this.from > this.end)
+    return Promise.reject('班级作业的结束时间要大于开始时间');
   var now = Date.now();
   if (this.from > now) 
     this.state = 'future';
@@ -936,13 +968,14 @@ AssignmentSchema.statics.findById = function(assignmentId) {
 }
 AssignmentSchema.statics.create = function(teacherId ,name, link, from, end) {
   var assignment = Assignment({name: name, link: link,from: from, end: end});
-  return User.findTeacherById(teacherId)
-              .then(teacherData => teacherData.createAssignmentForClass(assignment)) // this function will add classsId for assignment and add assignment for class. if no class reject
-              .then(assignmentData => assignmentData.save())
-              .then(
-                assignmentData => assignmentData,
-                err => errFilter(err, '创建班级作业失败')
-              )
+  return assignment.checkState() // this will set up the state
+                   .then(() => User.findTeacherById(teacherId))
+                   .then(teacherData => teacherData.createAssignmentForClass(assignment)) // this function will add classsId for assignment and add assignment for class. if no class reject
+                   .then(assignmentData => assignmentData.save())
+                   .then(
+                     assignmentData => assignmentData,
+                     err => errFilter(err, '创建班级作业失败')
+                   )
 }
 AssignmentSchema.statics.getRank = function(assignmentId) {
   return Assignment.findById(assignmentId)
@@ -951,9 +984,20 @@ AssignmentSchema.statics.getRank = function(assignmentId) {
                      () => Promise.resolve('计算排名成功'),
                      err => errFilter(err, '计算排名失败')
                    )
+}
+AssignmentSchema.statics.update = function(assistantId, name, link, from, end) {
+  var assignmentToBe = Assignment({name: name, link: link,from: from, end: end});
+  return assignmentToBe.checkState()
+                       .then(() => Assignment.findById(assistantId))
+                       .then(assignmentData => assignmentData.updateProperty({name: name,link: link,from: from, end: end, state: assignmentToBe.state}))
+                       .then(assignmentData => assignmentData.save())
+                       .then(
+                          assignmentData => assignmentData,
+                          err => errFilter(err, '修改班级作业失败')
+                        )
 } 
 AssignmentSchema.statics.delete = function(assignmentId) {
-
+  // if implement this method, it must only use before start to submit homework 
 }
 //-------------------------------------------------------------------
 
@@ -1019,6 +1063,7 @@ HomeworkSchema.methods.getReviews = function() {
 HomeworkSchema.methods.linkAssignment = function() {
   return Assignment.findById(this.assignmentId)
                    .then(assignmentData => this.updateProperty({LINK_assignment:{
+                                                                  _id: assignmentData._id,
                                                                   name:assignmentData.name,
                                                                   state:assignmentData.state,
                                                                   from: assignmentData.from,

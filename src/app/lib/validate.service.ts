@@ -128,6 +128,9 @@ export class ValidateService {
 		validateCreateAssignment: function(input) {
 			return this._validate({assignmentName: input.name, assignmentLink: input.link, assignmentFrom: input.from, assignmentEnd: input.end})
 		},
+		validateUpdateAssignment: function(input) {
+			return this.validateCreateAssignment(input);
+		},
 		validateCreateHomework: function(input) {
 			return this._validate({homeworkMessage: input.message, homeworkGithub: input.github});
 		},
@@ -151,6 +154,7 @@ export class ValidateService {
 	validateCreateClass = this.validator.validateCreateClass.bind(this.validator);
 	validateCreateGroup = this.validator.validateCreateGroup.bind(this.validator);
 	validateCreateAssignment = this.validator.validateCreateAssignment.bind(this.validator);
+	validateUpdateAssignment = this.validator.validateUpdateAssignment.bind(this.validator);
 	validateCreateHomework = this.validator.validateCreateHomework.bind(this.validator);
 	validateUpdateHomework = this.validator.validateUpdateHomework.bind(this.validator);
 	validateCreateReview = this.validator.validateCreateReview.bind(this.validator);

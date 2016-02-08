@@ -387,12 +387,24 @@ describe('Total test', function() {
 				done();
 			});
 	});
+	it('teacher update assignment', function(done) {
+		agentTeacher
+			.put('/Tapi/assignment/' + assignmentId)
+			.send({name: 'another_myAchievement', link:'www.another_google.com', from:String(1453861720310+2500000), end:String(1453861720310+3000000000+1)})
+			.end(function(err, res) {
+				expect(res.body.error).equal(false);
+				expect(res.body.assignmentData.name).equal('another_myAchievement');
+				expect(res.body.assignmentData.link).equal('www.another_google.com');
+				done();
+			});
+	});
 	it('teacher add assignment', function(done) {
 		agentTeacher
 			.post('/Tapi/assignment')
 			.send({name: 'myAchievement', link:'www.baidu.com', from:String(1453861720310+2500000), end:String(1453861720310+1)})
 			.end(function(err, res) {
-				expect(res.body.error).equal(false);
+				expect(res.body.error).equal(true);
+				expect(res.body.message).equal('班级作业的结束时间要大于开始时间')
 				// assignmentId = res.body.assignmentData._id;
 				done();
 			});
@@ -607,10 +619,15 @@ describe('Total test', function() {
 		agentAssistant
 			.post('/api/login')
 			.send({'account':'assistant1', 'password':'assistant1'})
-			.then((res) =>{
-		    expect(res.body.error).equal(false);
+			.end(function(err, res) {
+				console.log(res.body)
+				expect(res.body.error).equal(false);
 		    done();
-			});
+			})
+			// .then((res) =>{
+		 //    expect(res.body.error).equal(false);
+		 //    done();
+			// },err => {console.log(err);done(err);});
 	})
 	it('assistant finalReview successfully', function(done) {
 		agentAssistant
@@ -910,7 +927,7 @@ describe('Total test', function() {
 	})
 	it('change password', function(done) {
 		agentStudents[5]
-			.post('/Sapi/changePassword')
+			.post('/api/changePassword')
 			.send({oldPassword:'5555555', newPassword:'newPassword'})
 			.end(function(err, res) {
 				expect(res.body.error).equal(false);
@@ -928,7 +945,7 @@ describe('Total test', function() {
 	})
 	it('change password', function(done) {
 		agentStudents[5]
-			.post('/Sapi/changePassword')
+			.post('/api/changePassword')
 			.send({oldPassword:'newPassword', newPassword:'5555555'})
 			.end(function(err, res) {
 				expect(res.body.error).equal(false);

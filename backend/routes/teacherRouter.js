@@ -37,9 +37,19 @@ router.post('/assignment', tools.validateMiddleware(validator.validateCreateAssi
     errorMessage => res.json({error: true, message: errorMessage})
   );
 })
-router.delete('/assignment/:assignmentId', function(req, res) {
-  Assignment.delete(assignmentId).then(
-    successMessage => res.json({error: false, message:successMessage}),
+// haven't implement
+// router.delete('/assignment/:assignmentId', function(req, res) {
+//   Assignment.delete(assignmentId).then(
+//     successMessage => res.json({error: false, message:successMessage}),
+//     errorMessage => res.json({error: true, message: errorMessage})
+//   );
+// })
+router.put('/assignment/:assignmentId',
+           tools.validateMiddleware(validator.validateUpdateAssignment.bind(validator)),
+           function(req, res) {
+  // believe the teacher .... I don't check whether the assignment belong to the teacher
+  Assignment.update(req.params.assignmentId, req.body.name, req.body.link, req.body.from, req.body.end).then(
+    assignmentData => res.json({error: false, assignmentData:assignmentData}),
     errorMessage => res.json({error: true, message: errorMessage})
   );
 })

@@ -23,7 +23,7 @@ export interface Homework {
   //  name:}
   LINK_review: any;  // only one. be used to check update or create review.
   // review
-  LINK_assignment: any;
+  LINK_assignment: LINK_assignment;
   // {name:assignmentData.name,
   //  state:assignmentData.state,
   //  from: assignmentData.from,
@@ -69,11 +69,12 @@ export  interface Class {
   groupsId: ObjectId[];
   assignmentsId: ObjectId[];
   teachersId: ObjectId[];
-  LINK_assignments: any[],  //only for get to link other datas
+  LINK_assignments: LINK_assignment[],  //only for get to link other datas
   LINK_teachers: any[],
   LINK_groups: any[],
   indicate: boolean; // only in the front-end run-time
 }
+
 export interface User {
   _id: ObjectId;
   __v: number;
@@ -86,7 +87,16 @@ export interface User {
   classsId: ObjectId[];
   groupsId: ObjectId[];
   // LINK_homeworks: [Homework],
-  LINK_group: any,  // 
-  LINK_class: any
-  LINK_assignments: any;
+  LINK_group: any;// if assistant {names:[]} else {name:string}
+
+  LINK_class: any;// if teacher {names:[]} else {name:string}
+  LINK_assignments: LINK_assignment[]; //{_id, name, link, from, end, state}
+}
+interface LINK_assignment {
+  _id: string;
+  name: string;
+  from: string;
+  end: string;
+  state: string;
+  link: string;
 }

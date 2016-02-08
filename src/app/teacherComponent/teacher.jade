@@ -1,0 +1,39 @@
+my-nav([userData]="teacherData")
+ul.list-group
+  a.list-group-item.a(data-toggle="modal" data-target="#myCreateAssignmentModal") 布置作业
+  li.list-group-item(*ngFor="#assignment of teacherData?.LINK_assignments")
+    .row
+      .col-sm-1
+        span.label.label-primary {{assignment?.state}}
+      .col-sm-3 {{assignment?.name}}
+      .col-sm-2
+        a([href]="assignment?.link") 作业链接
+      .col-sm-3 {{"from : " + (assignment?.from | time_stamp)}}
+      .col-sm-3 {{"end : " + (assignment?.end | time_stamp)}}
+.modal.fade(id="myCreateAssignmentModal",tabindex="-1",role="dialog",aria-labelledby="myCreateAssignmentModalLabel")
+  .modal-dialog(role="document")
+    .modal-content
+      .modal-header
+        button.close(type="button",data-dismiss="modal",aria-label="Close")
+          span(aria-hidden="true") &times;
+        h4.modal-title(id="myCreateAssignmentModalLabel") 布置作业
+        .modal-body
+          form.create-assignment-form
+            .form-group
+              label(for="assignment-name")
+              input.form-control(type="text",[(ngModel)]="inputAssignmentName",id="assignment-name", placeholder="作业名字")
+            .form-group
+              label(for="assignment-link")
+              input.form-control(type="text",[(ngModel)]="inputAssignmentLink",id="assignment-link", placeholder="作业链接")
+            .form-group
+              label(for="assignment-start")
+              input.form-control(type="datetime-local",[(ngModel)]="inputAssignmentFrom",id="assignment-start", placeholder="作业开始时间")
+            .form-group
+              label(for="assignment-end")
+              input.form-control(type="datetime-local",[(ngModel)]="inputAssignmentEnd",id="assignment-end", placeholder="作业结束时间")
+          .messages-container
+            ul.messages-list
+              li([ngClass]="{'text-warning':!createAssignmentSuccess, 'text-success':createAssignmentSuccess}" ,*ngFor="#message of createAssignmentMessages") {{message}}
+        .modal-footer
+          button.btn.btn-default(type="button", data-dismiss="modal") 关闭
+          button.btn.btn-primary(type="button",(click)="onClickCreateAssignment()") 布置

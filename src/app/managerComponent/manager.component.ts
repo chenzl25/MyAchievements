@@ -4,7 +4,7 @@ import {NavComponent} from '../navComponent/nav.component';
 import {Router} from 'angular2/router';
 import {UserService} from '../lib/user.service';
 import {StorageService} from '../lib/storage.service';
-import {ManageService} from './manage.service';
+import {ManagerService} from './manager.service';
 import {User, Class, Group} from '../lib/interface';
 import {TotalStudentsOfClassPipe} from './totalStudentsOfClass.pipe';
 import {GroupNameOfStudentPipe} from './groupNameOfStudent.pipe';
@@ -17,7 +17,7 @@ import {I18nPipe} from '../lib/i18n.pipe';
 	template: require('./manager.jade'),
 	styles: [require('./manager.scss')],
 	directives: [NavComponent, NgClass],
-	providers: [ManageService],
+	providers: [ManagerService],
 	pipes: [TotalStudentsOfClassPipe,
 					GroupNameOfStudentPipe,
 					ClassNameOfGroupPipe,
@@ -26,7 +26,7 @@ import {I18nPipe} from '../lib/i18n.pipe';
 					I18nPipe,]
 })
 export class ManagerComponent implements OnInit {
-	managerData: any;
+	managerData: User;
 	registerClassMessages: string[] = [];
 	registerGroupMessages: string[] = [];
 	registerUserMessages: string[] = [];
@@ -58,9 +58,9 @@ export class ManagerComponent implements OnInit {
   constructor(private userService: UserService,
   						private storageService: StorageService,
   						private router: Router,
-  						private manageService: ManageService) { }
+  						private manageService: ManagerService) { }
 	ngOnInit() {
-		this.managerData = this.userService.getUser();
+		this.managerData = this.userService.getUser(); // this will check the login
 		this.manageService.getClassAll()
 				.then(classsData => this.classList = classsData,
 							errorMessages => this.getClassAllMessages = errorMessages);
@@ -70,10 +70,6 @@ export class ManagerComponent implements OnInit {
 		this.manageService.getUserAll()
 				.then(usersData => this.userList = usersData,
 							errorMessages => this.getUserAllMessages = errorMessages);
-	}
-	onQuit():void {
-		this.storageService.setQuit(true);
-		this.router.navigate(['Login']);
 	}
 	findInputGroupClassIdByClassName(className) {
 		for (let i = 0; i < this.classList.length; i++)

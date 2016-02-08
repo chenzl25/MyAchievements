@@ -119,6 +119,9 @@ var validator = {
 	validateCreateAssignment: function(input) {
 		return this._validate({assignmentName: input.name, assignmentLink: input.link, assignmentFrom: input.from, assignmentEnd: input.end})
 	},
+	validateUpdateAssignment: function(input) {
+		return this.validateCreateAssignment(input);
+	},
 	validateCreateHomework: function(input) {
 		return this._validate({homeworkMessage: input.message, homeworkGithub: input.github});
 	},
@@ -133,6 +136,6 @@ var validator = {
 	},
 	validateChangePassword: function(input) {
 		return this._validate({oldPassword: input.oldPassword, newPassword: input.newPassword})
-	}
+	},
 };
 module.exports = validator;

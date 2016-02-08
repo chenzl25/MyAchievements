@@ -6,7 +6,7 @@ import {UserService} from '../lib/user.service';
 import {ValidateService} from '../lib/validate.service';
 import {User, Class, Group} from '../lib/interface';
 @Injectable()
-export class ManageService {
+export class ManagerService {
   private _getClassAllUrl = 'proxy/Mapi/classs';
   private _getGroupAllUrl = 'proxy/Mapi/groups';
   private _getUserAllUrl = 'proxy/Mapi/users';

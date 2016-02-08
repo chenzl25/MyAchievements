@@ -6,7 +6,7 @@ import {ManagerComponent} from '../managerComponent/manager.component';
 import {TeacherComponent} from '../teacherComponent/teacher.component';
 import {AssistantComponent} from '../assistantComponent/assistant.component';
 import {StudentComponent} from '../studentComponent/student.component';
-
+// import {ChangePasswordComponent} from '../changePasswordComponent/changePassword.component';
 
 @Component({
     selector: 'my-app',
@@ -20,6 +20,7 @@ import {StudentComponent} from '../studentComponent/student.component';
 	{ path: '/teacher/:account', name: 'Teacher', component: TeacherComponent },
 	{ path: '/assistant/:account', name: 'Assistant', component: AssistantComponent },
 	{ path: '/student/:account', name: 'Student', component: StudentComponent},
+	// { path: '/changePassword', name: 'ChangePassword', component: ChangePasswordComponent},
 	{ path: '/...', name: 'Asteroid', redirectTo: ['Login'] }
 ])
 export class AppComponent { }

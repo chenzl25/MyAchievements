@@ -28,7 +28,7 @@ export class LoginService {
             })
             .catch(err => this.errFilter(err, 'Server Error!'))
     }
-    private errFilter(err: any, finalErrorMessage: string): any {
+    private errFilter(err: any, finalErrorMessage = 'Server Error!'): any {
         if (typeof err === 'string' || err instanceof <any>Array)
             finalErrorMessage = err;
         // finalErrorMessage = err   // use this to debug

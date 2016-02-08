@@ -14,8 +14,8 @@ var assistantRouter = require('./routes/assistantRouter');
 var teacherRouter = require('./routes/teacherRouter');
 var managerRouter = require('./routes/managerRouter');
 var indexRouter = require('./routes/indexRouter');
-
-
+var changePasswordRouter = require('./routes/changePasswordRouter');
+var quitRouter = require('./routes/quitRouter');
 
 var app = express();
 
@@ -51,6 +51,8 @@ app.use(session({
 // app.use('/', indexRouter);
 app.use('/Mapi', managerRouter);
 app.use('/api', loginRouter);
+app.use('/api', changePasswordRouter);
+app.use('/api', quitRouter);
 app.use('/Sapi', studentRouter);
 app.use('/Aapi', assistantRouter);
 app.use('/Tapi', teacherRouter);

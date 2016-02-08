@@ -200,6 +200,29 @@ describe('Manager delete', function() {
 				done();
 			});
 	});
+	it('add teacher for class successfully', function(done) {
+		agent
+			.post('/Mapi/class/'+classAnotherId+'/teacher/'+teacherOneId)
+			.end(function(err, res) {
+				expect(res.body.error).equal(false);
+				expect(res.body.classData).to.be.a('object');
+				expect(res.body.classData).to.has.property('_id');
+				expect(res.body.classData._id).equal(classAnotherId);
+				expect(res.body.classData.teachersId).to.be.a('array');
+				expect(res.body.classData.teachersId.indexOf(teacherOneId)).not.equal(-1);
+				done();
+			});
+	});
+	it('teacher Login to look the LINK_class', function(done) {
+		chai.request(server)
+				.post('/api/login')
+				.send({account: '222222', password: '222222'})
+				.end(function(err, res) {
+					expect(res.body.userData.LINK_class.names.length).equal(2);
+					expect(res.body.error).equal(false);
+					done();
+				})
+	})
 	it('add teacher for class fail', function(done) {
 		agent
 			.post('/Mapi/class/'+classId+'/teacher/'+teacherTwoId)
@@ -272,6 +295,16 @@ describe('Manager delete', function() {
 				done();
 			});
 	});
+	it('assistant Login to look the LINK_group and LINK_class', function(done) {
+		chai.request(server)
+				.post('/api/login')
+				.send({account: '999999', password: '999999'})
+				.end(function(err, res) {
+					expect(res.body.userData.LINK_group.names).to.be.a('array');
+					expect(res.body.error).equal(false);
+					done();
+				})
+	})
 	it('find class', function(done) {
 		agent
 			.get('/Mapi/class/'+classId)
@@ -295,7 +328,6 @@ describe('Manager delete', function() {
 	it('search the class successfully and ensure the teacherOne has been removed from the class', function(done) {
 		agent.get('/Mapi/class/'+classId)
 				 .end(function(err, res) {
-				 	console.log(res.body)
 				 	expect(res.body.error).equal(false);
 				 	expect(res.body.classData.teachersId.indexOf(teacherOneId)).equal(-1);
 				 	done();
@@ -305,7 +337,6 @@ describe('Manager delete', function() {
 		agent
 			.get('/Mapi/group/'+groupOneId)
 			.end(function(err, res) {
-				console.log(res.body)
 				expect(res.body.error).equal(false);
 				expect(res.body.groupData.assistantsId).to.has.length(1);
 				done();
@@ -314,7 +345,6 @@ describe('Manager delete', function() {
 	it('delete the assistantOne successfully', function(done) {
 		agent.delete('/Mapi/user/'+'999999')
 				 .end(function(err, res) {
-				 	console.log(res.body)
 				 	expect(res.body.error).equal(false);
 				 	done();
 				 })
@@ -322,7 +352,6 @@ describe('Manager delete', function() {
 	it('delete the assistantOne successfully', function(done) {
 		agent.delete('/Mapi/user/'+'888888')
 				 .end(function(err, res) {
-				 	console.log(res.body)
 				 	expect(res.body.error).equal(false);
 				 	done();
 				 })
@@ -331,7 +360,6 @@ describe('Manager delete', function() {
 		agent
 			.get('/Mapi/group/'+groupOneId)
 			.end(function(err, res) {
-				console.log(res.body)
 				expect(res.body.error).equal(false);
 				expect(res.body.groupData.assistantsId).to.has.length(0);
 				done();
@@ -340,7 +368,6 @@ describe('Manager delete', function() {
 	it('delete the class successfully', function(done) {
 		agent.delete('/Mapi/class/'+classId)
 				 .end(function(err, res) {
-				 	console.log(res.body)
 				 	expect(res.body.error).equal(false);
 				 	done();
 				 })
@@ -384,6 +411,24 @@ describe('Manager delete', function() {
 			.end(function(err, res) {
 				expect(res.body.error).equal(false);
 				expect(res.body.userData.groupsId.indexOf(groupOneId)).equal(-1);
+				done();
+			});
+	});
+	it('quit ', function(done) {
+		agent
+			.post('/api/quit')
+			.end(function(err, res) {
+				expect(res.body.error).equal(false);
+				expect(res.body.message).equal('退出成功');
+				done();
+			});
+	});
+	it('search member fail, because the user has quitted', function(done) {
+		agent
+			.get('/Mapi/user/'+assistantTwoId)
+			.end(function(err, res) {
+				expect(res.body.error).equal(true);
+				expect(res.body.message).equal('你还没登陆');
 				done();
 			});
 	});

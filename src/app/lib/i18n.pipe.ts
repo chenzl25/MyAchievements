@@ -23,6 +23,7 @@ export class I18nPipe implements PipeTransform{
 		this.totalMapper = {};
 		this.chineseMapper = {};
 		this.totalMapper['chinese'] = this.chineseMapper;
+		this.chineseMapper['manager'] = "管理员";
 		this.chineseMapper['teacher'] = "教师";
 		this.chineseMapper['student'] = "学生";
 		this.chineseMapper['assistant'] = "助教";

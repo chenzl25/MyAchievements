@@ -118,14 +118,7 @@ router.get('/homework/:homeworkId/reviews', function(req, res) {
   )
 })
 
-router.post('/changePassword',
-  tools.validateMiddleware(validator.validateChangePassword.bind(validator)),
-  function(req,res) {
-    User.changePassword(req.session.userData._id, req.body.oldPassword, req.body.newPassword).then(
-      successMessage => res.json({error: false, message:successMessage}),
-      errorMessage => res.json({error: true, message: errorMessage})
-    )
-})
+
 router.get('/assignment/:assignmentId/toReviewHomeworks', function(req, res) {
   User.studentGetToReviewHomeworks(req.session.userData._id, req.params.assignmentId).then(
     homeworksData => res.json({error: false, homeworksData:homeworksData}),
