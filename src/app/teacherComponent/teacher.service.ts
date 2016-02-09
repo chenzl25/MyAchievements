@@ -34,7 +34,7 @@ export class TeacherService {
     								.then(res => res.error === false?res.assignmentData:Promise.reject(res.message))
     								.catch(err => this.errFilter(err))
   }
-  updateAssignment(AssignmentId: string, AssignmentName:string, AssignmentLink:string, AssignmentFrom, AssignmentEnd) {
+  updateAssignment(AssignmentId: string, AssignmentName:string, AssignmentLink:string, AssignmentFrom, AssignmentEnd):Promise<any> {
   	let createAssignmentUrl = `proxy/Tapi/assignment/${AssignmentId}`;
     let input = {
       name: AssignmentName,

@@ -31,6 +31,7 @@ export interface Homework {
   //  link:assignmentData.link }
 }
 export interface Assignment {
+  _id: ObjectId;
   name: string
   __v: number;
   state: string;  // future,present,end
@@ -86,14 +87,14 @@ export interface User {
   homeworksId: ObjectId[];
   classsId: ObjectId[];
   groupsId: ObjectId[];
-  // LINK_homeworks: [Homework],
+  LINK_homeworks: [Homework],
   LINK_group: any;// if assistant {names:[]} else {name:string}
 
   LINK_class: any;// if teacher {names:[]} else {name:string}
   LINK_assignments: LINK_assignment[]; //{_id, name, link, from, end, state}
 }
 interface LINK_assignment {
-  _id: string;
+  _id: ObjectId;
   name: string;
   from: string;
   end: string;

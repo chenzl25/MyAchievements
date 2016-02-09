@@ -595,7 +595,8 @@ UserSchema.methods.accordingToPositionLink = function() {
                    .then(homeworksData => this.updateProperty({LINK_homeworks: homeworksData}))
                    .then(() => Group.findById(this.groupsId[0]))
                    .then(groupData => Class.findById(groupData.classId)
-                                           .then(classData => this.updateProperty({LINK_group:{name:groupData.name, toReviewGroupId:groupData.toReviewGroupId},LINK_class:{name:classData.name}}))
+                                           .then(classData => classData.linkAssignments())
+                                           .then(classData => this.updateProperty({LINK_assignments:classData.LINK_assignments,LINK_group:{name:groupData.name, toReviewGroupId:groupData.toReviewGroupId},LINK_class:{name:classData.name}}))
                    )
   else if (this.position === 'assistant') {
     if(this.groupsId.length === 0)

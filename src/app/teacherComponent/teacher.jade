@@ -1,15 +1,18 @@
 my-nav([userData]="teacherData")
 ul.list-group
-  a.list-group-item.a(data-toggle="modal" data-target="#myCreateAssignmentModal") 布置作业
-  li.list-group-item(*ngFor="#assignment of teacherData?.LINK_assignments")
+  a.list-group-item(data-toggle="modal",data-target="#myCreateAssignmentModal",(click)="onClickSetUpCreateAssignment()") 布置作业
+  li.list-group-item(*ngFor="#assignmentItem of teacherData?.LINK_assignments")
     .row
       .col-sm-1
-        span.label.label-primary {{assignment?.state}}
-      .col-sm-3 {{assignment?.name}}
+        span.label.label-primary {{assignmentItem?.state}}
+      .col-sm-2 {{assignmentItem?.name}}
       .col-sm-2
-        a([href]="assignment?.link") 作业链接
-      .col-sm-3 {{"from : " + (assignment?.from | time_stamp)}}
-      .col-sm-3 {{"end : " + (assignment?.end | time_stamp)}}
+        a([href]="assignmentItem?.link") 作业链接
+      .col-sm-3 {{"from : " + (assignmentItem?.from | time_stamp)}}
+      .col-sm-3 {{"end : " + (assignmentItem?.end | time_stamp)}}
+      .col-sm-1
+        button.btn.btn-default(data-toggle="modal",data-target="#myUpdateAssignmentModal", (click)="onClickSetUpUpdateAssignment(assignmentItem)") 修改
+
 .modal.fade(id="myCreateAssignmentModal",tabindex="-1",role="dialog",aria-labelledby="myCreateAssignmentModalLabel")
   .modal-dialog(role="document")
     .modal-content
@@ -20,20 +23,48 @@ ul.list-group
         .modal-body
           form.create-assignment-form
             .form-group
-              label(for="assignment-name")
-              input.form-control(type="text",[(ngModel)]="inputAssignmentName",id="assignment-name", placeholder="作业名字")
+              label(for="assignment-create-name")
+              input.form-control(type="text",[(ngModel)]="inputAssignmentName",id="assignment-create-name", placeholder="作业名字")
             .form-group
-              label(for="assignment-link")
-              input.form-control(type="text",[(ngModel)]="inputAssignmentLink",id="assignment-link", placeholder="作业链接")
+              label(for="assignment-create-link")
+              input.form-control(type="text",[(ngModel)]="inputAssignmentLink",id="assignment-create-link", placeholder="作业链接")
             .form-group
-              label(for="assignment-start")
-              input.form-control(type="datetime-local",[(ngModel)]="inputAssignmentFrom",id="assignment-start", placeholder="作业开始时间")
+              label(for="assignment-create-start")
+              input.form-control(type="datetime-local",[(ngModel)]="inputAssignmentFrom",id="assignment-create-start", placeholder="作业开始时间")
             .form-group
-              label(for="assignment-end")
-              input.form-control(type="datetime-local",[(ngModel)]="inputAssignmentEnd",id="assignment-end", placeholder="作业结束时间")
+              label(for="assignment-create-end")
+              input.form-control(type="datetime-local",[(ngModel)]="inputAssignmentEnd",id="assignment-create-end", placeholder="作业结束时间")
           .messages-container
             ul.messages-list
-              li([ngClass]="{'text-warning':!createAssignmentSuccess, 'text-success':createAssignmentSuccess}" ,*ngFor="#message of createAssignmentMessages") {{message}}
+              li([ngClass]="{'text-warning':!outputAssignmentSuccess, 'text-success':outputAssignmentSuccess}" ,*ngFor="#message of outputAssignmentMessages") {{message}}
         .modal-footer
           button.btn.btn-default(type="button", data-dismiss="modal") 关闭
           button.btn.btn-primary(type="button",(click)="onClickCreateAssignment()") 布置
+
+.modal.fade(id="myUpdateAssignmentModal",tabindex="-1",role="dialog",aria-labelledby="myUpdateAssignmentModalLabel")
+  .modal-dialog(role="document")
+    .modal-content
+      .modal-header
+        button.close(type="button",data-dismiss="modal",aria-label="Close")
+          span(aria-hidden="true") &times;
+        h4.modal-title(id="myUpdateAssignmentModalLabel") 修改作业
+        .modal-body
+          form.update-assignment-form
+            .form-group
+              label(for="assignment-update-name")
+              input.form-control(type="text",[(ngModel)]="inputAssignmentName",id="assignment-update-name", placeholder="作业名字")
+            .form-group
+              label(for="assignment-update-link")
+              input.form-control(type="text",[(ngModel)]="inputAssignmentLink",id="assignment-update-link", placeholder="作业链接")
+            .form-group
+              label(for="assignment-update-start")
+              input.form-control(type="datetime-local",[(ngModel)]="inputAssignmentFrom",id="assignment-update-start", placeholder="作业开始时间")
+            .form-group
+              label(for="assignment-update-end")
+              input.form-control(type="datetime-local",[(ngModel)]="inputAssignmentEnd",id="assignment-update-end", placeholder="作业结束时间")
+          .messages-container
+            ul.messages-list
+              li([ngClass]="{'text-warning':!outputAssignmentSuccess, 'text-success':outputAssignmentSuccess}" ,*ngFor="#message of outputAssignmentMessages") {{message}}
+        .modal-footer
+          button.btn.btn-default(type="button", data-dismiss="modal") 关闭
+          button.btn.btn-primary(type="button",(click)="onClickUpdateAssignment()") 修改

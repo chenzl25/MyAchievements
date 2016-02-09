@@ -506,8 +506,8 @@ describe('Total test', function() {
 				expect(res.body.error).equal(false);
 				homeworkId = res.body.homeworkData._id;
 				homeworksId.push(res.body.homeworkData._id);
-				// tools.deleteImage(res.body.homeworkData.image);  //clean
-				// tools.deleteSource(res.body.homeworkData.source);//clean
+				tools.deleteImage(res.body.homeworkData.image);  //clean
+				tools.deleteSource(res.body.homeworkData.source);//clean
 				done();
 			})
 	})
@@ -520,8 +520,8 @@ describe('Total test', function() {
 			.end(function(req, res) {
 				expect(res.body.error).equal(false);
 				expect(res.body.homeworkData._id).equal(homeworkId)
-				// tools.deleteImage(res.body.homeworkData.image);  //clean
-				// tools.deleteSource(res.body.homeworkData.source);//clean
+				tools.deleteImage(res.body.homeworkData.image);  //clean
+				tools.deleteSource(res.body.homeworkData.source);//clean
 				done();
 			})
 	})
@@ -717,6 +717,8 @@ describe('Total test', function() {
 				.end(function(req, res) {
 					expect(res.body.error).equal(false);
 					homeworksId.push(res.body.homeworkData._id)
+					tools.deleteImage(res.body.homeworkData.image);  //clean
+					tools.deleteSource(res.body.homeworkData.source);//clean
 					done();
 				})
 		})
@@ -813,6 +815,8 @@ describe('Total test', function() {
 				.end(function(req, res) {
 					expect(res.body.error).equal(false);
 					testGroupRankHomeworksId.push(res.body.homeworkData._id)
+					tools.deleteImage(res.body.homeworkData.image);  //clean
+					tools.deleteSource(res.body.homeworkData.source);//clean
 					done();
 				})
 		})

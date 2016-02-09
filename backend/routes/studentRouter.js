@@ -26,6 +26,7 @@ var homeworkUpload = multer({
       cb(null, path.join(__dirname, '..', 'uploads', 'homeworks'));
     },
     filename: function (req, file, cb) {
+      debug(file);
     	if (file.fieldname == 'source') {
     		req.body.source = Date.now()+'__'+file.originalname;
       	cb(null, req.body.source);
@@ -69,7 +70,7 @@ router.post('/assignment/:assignmentId/homework',
   homeworkUpload.any(), 
   tools.checkSourceAndImageAllUploadMiddleware,
   function(req, res) {
-  debug(req.body);
+    debug(req.body);
     Homework.create(req.session.userData._id, req.params.assignmentId, req.body.source, req.body.image, req.body.github, req.body.message).then(
       homeworkData => res.json({error: false, homeworkData:homeworkData}),
       errorMessage => res.json({error: true, message: errorMessage})

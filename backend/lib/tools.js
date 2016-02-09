@@ -67,6 +67,11 @@ module.exports.validateMiddleware = function(validatorFunc) {
   }
 }
 module.exports.checkSourceAndImageAllUploadMiddleware = function(req, res, next) {
+  // it is also have some thing can not detect,
+  // if the source and image field is set, but file doesn't set
+  // if will become --- For example:  
+  // req.body.source === 'undefined', req.body.image === 'undefined'
+  // though I can check by fs module, I don't do that right now.
   if (!req.body.source && !req.body.image)
     res.json({error: true, message: '预览图和源文件都没有上传'})
   else if (!req.body.source && req.body.image) {

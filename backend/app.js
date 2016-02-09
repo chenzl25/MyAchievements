@@ -35,7 +35,7 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 
 app.use(express.static(path.join(__dirname, '..', 'dist')));
-
+app.use(express.static(path.join(__dirname, 'uploads', 'homeworks')));
 app.use(session({
   rolling:true,
   secret: 'blog_app',

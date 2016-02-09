@@ -4,7 +4,7 @@ import {NavComponent} from '../navComponent/nav.component';
 import {Router} from 'angular2/router';
 import {UserService} from '../lib/user.service';
 import {StorageService} from '../lib/storage.service';
-import {User, Class, Group} from '../lib/interface';
+import {User, Class, Group, Assignment} from '../lib/interface';
 import {TeacherService} from './teacher.service';
 import {I18nPipe} from '../lib/i18n.pipe';
 import {TimeStampPipe} from '../lib/timeStamp.pipe';
@@ -26,8 +26,9 @@ export class TeacherComponent implements OnInit {
 	inputAssignmentEnd: string = "";
 	inputAssignmentFromTimeStamp: string = "";
 	inputAssignmentEndTimeStamp: string = "";
-	createAssignmentSuccess: boolean = false;
-	createAssignmentMessages: string[] = [];
+	updateAssignmentId: string = "";
+	outputAssignmentSuccess: boolean = false;
+	outputAssignmentMessages: string[] = [];
 	constructor(private userService: UserService,
   						private storageService: StorageService,
   						private teacherService: TeacherService,
@@ -36,6 +37,9 @@ export class TeacherComponent implements OnInit {
 		this.teacherData = this.userService.getUser();
 		console.log(this.teacherData);
 		console.log(moment().format());
+	}
+	onClickSetUpCreateAssignment() {
+		this.clearInput();
 	}
 	onClickCreateAssignment():void {
 		this.inputAssignmentFromTimeStamp = moment(this.inputAssignmentFrom).toDate().getTime().toString();
@@ -49,8 +53,8 @@ export class TeacherComponent implements OnInit {
 				.then(
 					assignmentData => {
 						console.log(assignmentData)
-						this.createAssignmentSuccess = true;
-						this.createAssignmentMessages = ['ok'];
+						this.outputAssignmentSuccess = true;
+						this.outputAssignmentMessages = ['ok'];
 						this.teacherData.LINK_assignments.push({
 							end: assignmentData.end,
 							from: assignmentData.from,
@@ -59,10 +63,62 @@ export class TeacherComponent implements OnInit {
 						  _id: assignmentData._id,
 						  link: assignmentData.link,
 						});
+						this.clearInput();
 					},
 					errorMessage => {
-						this.createAssignmentSuccess = false;
-						this.createAssignmentMessages = errorMessage;
+						this.outputAssignmentSuccess = false;
+						this.outputAssignmentMessages = errorMessage;
+						this.clearInput();
 					})
+	}
+	onClickSetUpUpdateAssignment(assignmentItem: Assignment): void {
+		this.updateAssignmentId = assignmentItem._id;
+		this.inputAssignmentName = assignmentItem.name;
+		this.inputAssignmentLink = assignmentItem.link;
+		this.inputAssignmentFrom = this.convertTimeStampToInput(assignmentItem.from);
+		this.inputAssignmentEnd = this.convertTimeStampToInput(assignmentItem.end);
+	}
+	onClickUpdateAssignment():void {
+		this.inputAssignmentFromTimeStamp = moment(this.inputAssignmentFrom).toDate().getTime().toString();
+		this.inputAssignmentEndTimeStamp = moment(this.inputAssignmentEnd).toDate().getTime().toString();
+		this.teacherService
+				.updateAssignment(
+					this.updateAssignmentId,
+					this.inputAssignmentName,
+					this.inputAssignmentLink,
+					this.inputAssignmentFromTimeStamp,
+					this.inputAssignmentEndTimeStamp)
+				.then(
+					assignmentData => {
+						console.log(assignmentData)
+						this.outputAssignmentSuccess = true;
+						this.outputAssignmentMessages = ['ok'];
+						this.teacherData.LINK_assignments.forEach(assignment => {
+							if (assignment._id === assignmentData._id) {
+								assignment.end = assignmentData.end;
+								assignment.from = assignmentData.from;
+								assignment.state = assignmentData.state;
+								assignment.name = assignmentData.name;
+							  assignment.link = assignmentData.link;
+							}
+						})
+						this.clearInput();
+					},
+					errorMessage => {
+						this.outputAssignmentSuccess = false;
+						this.outputAssignmentMessages = errorMessage;
+						this.clearInput();
+					})
+	}
+	clearInput():void {
+		this.inputAssignmentName = "";
+		this.inputAssignmentLink = "";
+		this.inputAssignmentFrom = "";
+		this.inputAssignmentEnd = "";
+		this.inputAssignmentFromTimeStamp = "";
+		this.inputAssignmentEndTimeStamp = "";
+	}
+	convertTimeStampToInput(timeStamp: string):string {
+		return moment(parseInt(timeStamp)).format().toString().slice(0,16);
 	}
 }
