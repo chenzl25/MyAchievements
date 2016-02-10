@@ -78,8 +78,8 @@ var GroupSchema = new mongoose.Schema({
   assistantsId: [ObjectId],  // only one assistantsId
   studentsId: [ObjectId],
   toReviewGroupId: {type: ObjectId, default: null},
-  LINK_assistants: [UserSchema],  //only for get to link other datas
-  LINK_students: [UserSchema]
+  LINK_assistants: [UserSchema],  // now no usage
+  LINK_students: [UserSchema] // now no usage
 });
 
 var ClassSchema = new mongoose.Schema({
@@ -88,8 +88,8 @@ var ClassSchema = new mongoose.Schema({
   assignmentsId: [ObjectId],
   teachersId: [ObjectId],
   LINK_assignments: [],  //only for get to link other datas
-  LINK_teachers: [],
-  LINK_groups: []
+  LINK_teachers: [], // now no usage
+  LINK_groups: []  // now no usage
 });
 
 
@@ -353,13 +353,16 @@ GroupSchema.methods.getToReviewHomeworksByAssignmentId = function(assignmentId) 
                      return Promise.all(assignmentData.homeworksId.map(homeworkId => Homework.findById(homeworkId)))
                    })
                    .then(homeworksData => {
-                      var toReviewHomeworksData = homeworksData.filter(homeworkData => {
+                      var toReviewHomeworksDataPromise = homeworksData.filter(homeworkData => {
                         for (var i = 0; i < studentsId.length; i++)
                           if (homeworkData.ownerId.toString() === studentsId[i].toString())
                             return true;
                         return false;
-                      })
-                      return Promise.resolve(toReviewHomeworksData)
+                      }).map(homeworkData =>
+                        User.findById(homeworkData.ownerId)
+                            .then(studentData => homeworkData.updateProperty({LINK_owner:{name:studentData.name, email:studentData.email}}))
+                      )
+                      return Promise.all(toReviewHomeworksDataPromise)
                    })
 }
 GroupSchema.methods.removeAssistantById = function(assistantId) {

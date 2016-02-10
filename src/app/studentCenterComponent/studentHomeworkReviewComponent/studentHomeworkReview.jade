@@ -1,0 +1,87 @@
+.nav.nav-tabs
+  li(role="presentation",[ngClass]="{active:tabReviewOthers}")
+    a((click)="onClickMyReviewTab()") 我的评审
+  li(role="presentation",[ngClass]="{active:!tabReviewOthers}")
+    a((click)="onClickOthersReviewTab()") 他人评审
+
+ul.list-group(*ngIf="tabReviewOthers")
+  li.list-group-item(*ngFor="#homeworkItem of toReviewHomeworkList")
+    .container-fluid
+      .col-sm-3
+        .row
+          img.homework-image([src]="'proxy/'+homeworkItem?.image")
+      .col-sm-7
+        .row
+          p.homework-review-message(*ngIf="homeworkItem.LINK_review") {{homeworkItem?.LINK_review?.message}}
+          p.homework-review-message(*ngIf="!homeworkItem.LINK_review") 你还没写任何评审你还没写任何评审你还没写任何评审你还没写任何评审你还没写任何评审你还没写任何评审你还没写任何评审你还没写任何评审你还没写任何评审你还没写任何评审你还没写任何评审你还没写任何评审你还没写任何评审你还没写任何评审你还没写任何评审你还没写任何评审你还没写任何评审 
+      .col-sm-2.bg-info
+        .row
+          p.homework-owner-name {{homeworkItem?.LINK_owner?.name}} 
+        .row
+          p.homework-review-score(*ngIf="homeworkItem.LINK_review") {{'分数: '+homeworkItem?.LINK_review?.score}}
+          p.homework-review-score(*ngIf="!homeworkItem.LINK_review") 分数: null
+        .row
+           button.btn.btn-primary.btn-block.setup-create-review-button(*ngIf="!homeworkItem.LINK_review",data-toggle="modal",data-target="#myCreateReviewModal",(click)="onClickSetUpCreateReview(homeworkItem.ownerId, homeworkItem._id)") 开始评审
+           button.btn.btn-primary.btn-block.setup-update-review-button(*ngIf="homeworkItem.LINK_review",data-toggle="modal",data-target="#myUpdateReviewModal",(click)="onClickSetUpUpdateReview(homeworkItem.LINK_review._id, homeworkItem.LINK_review.score, homeworkItem.LINK_review.message)") 重新评审
+
+ul.list-group(*ngIf="!tabReviewOthers")
+  li.list-group-item(*ngIf="myHomeworkItem.finalMessage||myHomeworkItem.finalScore")
+    .container
+      .col-sm-10
+        .row
+          p.homework-final-message {{myHomeworkItem?.finalMessage}}
+      .col-sm-2
+        .row
+          p.homework-final-score {{'分数: '+myHomeworkItem?.finalScore}}
+  li.list-group-item(*ngFor="#reviewItem of myHomeworkReviewsList")
+    .container
+      .col-sm-10
+        .row
+          p.review-message {{reviewItem?.message}}
+      .col-sm-2.bg-info
+        .row
+          p.review-score {{'分数: '+reviewItem?.score}}
+
+.modal.fade(id="myCreateReviewModal",tabindex="-1",role="dialog",aria-labelledby="myCreateReviewModalLabel")
+  .modal-dialog(role="document")
+    .modal-content
+      .modal-header
+        button.close(type="button",data-dismiss="modal",aria-label="Close")
+          span(aria-hidden="true") &times;
+        h4.modal-title(id="myCreateReviewModalLabel") 提交评审
+        .modal-body
+          form.create-review-form
+            .form-group
+              label(for="review-create-score")
+              input.form-control(type="number",min="0",max="100",step="1",[(ngModel)]="inputReviewScore",id="review-create-score", placeholder="评审分数")
+            .form-group
+              label(for="review-create-message")
+              textarea.form-control([(ngModel)]="inputReviewMessage",id="review-create-message", placeholder="评审内容")
+          .messages-container
+            ul.messages-list
+              li([ngClass]="{'text-warning':!outputSuccess, 'text-success':outputSuccess}" ,*ngFor="#message of outputMessages") {{message}}
+        .modal-footer
+          button.btn.btn-default(type="button", data-dismiss="modal") 关闭
+          button.btn.btn-primary(type="button",(click)="onClickCreateReview()") 提交
+
+.modal.fade(id="myUpdateReviewModal",tabindex="-1",role="dialog",aria-labelledby="myUpdateReviewModalLabel")
+  .modal-dialog(role="document")
+    .modal-content
+      .modal-header
+        button.close(type="button",data-dismiss="modal",aria-label="Close")
+          span(aria-hidden="true") &times;
+        h4.modal-title(id="myUpdateReviewModalLabel") 重交评审
+        .modal-body
+          form.update-review-form
+            .form-group
+              label(for="review-update-score")
+              input.form-control(type="number",min="0",max="100",step="1",[(ngModel)]="inputReviewScore",id="review-update-score", placeholder="评审分数")
+            .form-group
+              label(for="review-update-message")
+              textarea.form-control([(ngModel)]="inputReviewMessage",id="review-update-message", placeholder="评审内容")
+          .messages-container
+            ul.messages-list
+              li([ngClass]="{'text-warning':!outputSuccess, 'text-success':outputSuccess}" ,*ngFor="#message of outputMessages") {{message}}
+        .modal-footer
+          button.btn.btn-default(type="button", data-dismiss="modal") 关闭
+          button.btn.btn-primary(type="button",(click)="onClickUpdateReview()") 重交

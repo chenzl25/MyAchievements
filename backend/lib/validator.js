@@ -58,7 +58,7 @@ var validator = {
 		homeworkMessage: {
 			errorMessage: '提交作业的附言长度为2-250个字符',
 			emptyMessage: '',
-			pattern: /^.{2,250}$/
+			pattern: /^.{2,250}$/m
 		},
 		homeworkGithub: {
 			errorMessage: '提交作业的github链接长度为2-250个字符',
@@ -68,7 +68,7 @@ var validator = {
 		reviewMessage: {
 			errorMessage: '评审的内容长度为50-500个字符',
 			emptyMessage: '评审内容为空',
-			pattern: /^.{50,500}$/
+			pattern: /^.{50,500}$/m
 		},
 		reviewScore:{
 			errorMessage: '评审的分数为0-100',

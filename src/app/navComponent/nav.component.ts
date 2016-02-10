@@ -10,14 +10,15 @@ import {User} from '../lib/interface';
 	selector: 'my-nav',
 	template: require('./nav.jade'),
 	styles: [require('./nav.scss')],
-	inputs: ['userData'],
+	inputs: ['userData', 'brandLink'],
 	pipes: [I18nPipe],
   providers: [QuitService],
 	directives: [ROUTER_DIRECTIVES,
 							 ChangePasswordComponent],
 })
 export class NavComponent {
-	userData: any;
+	userData: User;
+	brandLink: string;
   constructor(private storageService: StorageService,
   						private quitService: QuitService,
   						private router: Router) { }

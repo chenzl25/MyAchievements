@@ -1,43 +1,51 @@
 nav.navbar.navbar-default
   .container-fluid
-    a.navbar-brand() MyAchievements
-    ul.nav.navbar-nav.navbar-right
-      li(*ngIf="userData?.position === 'student'")
-        a {{userData?.LINK_class?.name}}
-      li(*ngIf="userData?.position === 'student'")
-        a {{userData?.LINK_group?.name}}
-      li(*ngIf="userData?.position === 'assistant'")
-        a {{userData?.LINK_class?.name}}
-      li.dropdown(*ngIf="userData?.position === 'assistant'")
-        a.dropdown-toggle(data-toggle="dropdown",role="button",aria-haspopup="true",aria-expanded="false") Group
-          span.caret
-        ul.dropdown-menu
-          li(*ngFor="#groupName of userData?.LINK_group?.names")
-            a {{groupName}}
-      li.dropdown(*ngIf="userData?.position === 'teacher'")
-        a.dropdown-toggle(data-toggle="dropdown",role="button",aria-haspopup="true",aria-expanded="false") Class
-          span.caret
-        ul.dropdown-menu
-          li(*ngFor="#className of userData?.LINK_class?.names")
-            a {{className}}
-      li(*ngIf="userData?.position === 'manager'") 
-        a {{'manager' | i18n:'chinese'}}
-      li(*ngIf="userData?.position === 'teacher'") 
-        a {{'teacher' | i18n:'chinese'}}
-      li(*ngIf="userData?.position === 'assistant'") 
-        a {{'assistant' | i18n:'chinese'}}
-      li(*ngIf="userData?.position === 'student'") 
-        a {{'student' | i18n:'chinese'}} 
-      li.dropdown
-        a.dropdown-toggle(data-toggle="dropdown",role="button",aria-haspopup="true",aria-expanded="false") {{userData?.name}}
-          span.caret
-        ul.dropdown-menu
-          li
-            //- a([routerLink]="['ChangePassword']") 修改密码
-            a(data-toggle="modal" data-target="#myChangePasswordModal"/* use for the ChangePassword modal*/) 修改密码
-          li.divider(role="separator")
-          li
-            a((click)="onQuit()") 退出
+    .navbar-header
+      button.navbar-toggle.collapsed(type="button", data-toggle="collapse",data-target="#my-achievements-navbar-collapse", aria-expanded="false")
+        span.sr-only Toggle navigation
+        span.icon-bar
+        span.icon-bar
+        span.icon-bar
+      a.navbar-brand(*ngIf="brandLink",[routerLink]="[brandLink]") MyAchievements
+      a.navbar-brand(*ngIf="!brandLink") MyAchievements
+    .collapse.navbar-collapse(id="my-achievements-navbar-collapse")
+      ul.nav.navbar-nav.navbar-right
+        li(*ngIf="userData?.position === 'student'")
+          a {{userData?.LINK_class?.name}}
+        li(*ngIf="userData?.position === 'student'")
+          a {{userData?.LINK_group?.name}}
+        li(*ngIf="userData?.position === 'assistant'")
+          a {{userData?.LINK_class?.name}}
+        li.dropdown(*ngIf="userData?.position === 'assistant'")
+          a.dropdown-toggle(data-toggle="dropdown",role="button",aria-haspopup="true",aria-expanded="false") Group
+            span.caret
+          ul.dropdown-menu
+            li(*ngFor="#groupName of userData?.LINK_group?.names")
+              a {{groupName}}
+        li.dropdown(*ngIf="userData?.position === 'teacher'")
+          a.dropdown-toggle(data-toggle="dropdown",role="button",aria-haspopup="true",aria-expanded="false") Class
+            span.caret
+          ul.dropdown-menu
+            li(*ngFor="#className of userData?.LINK_class?.names")
+              a {{className}}
+        li(*ngIf="userData?.position === 'manager'") 
+          a {{'manager' | i18n:'chinese'}}
+        li(*ngIf="userData?.position === 'teacher'") 
+          a {{'teacher' | i18n:'chinese'}}
+        li(*ngIf="userData?.position === 'assistant'") 
+          a {{'assistant' | i18n:'chinese'}}
+        li(*ngIf="userData?.position === 'student'") 
+          a {{'student' | i18n:'chinese'}} 
+        li.dropdown
+          a.dropdown-toggle(data-toggle="dropdown",role="button",aria-haspopup="true",aria-expanded="false") {{userData?.name}}
+            span.caret
+          ul.dropdown-menu
+            li
+              //- a([routerLink]="['ChangePassword']") 修改密码
+              a(data-toggle="modal" data-target="#myChangePasswordModal"/* use for the ChangePassword modal*/) 修改密码
+            li.divider(role="separator")
+            li
+              a((click)="onQuit()") 退出
 
 //- change Password component is here, I use the bootstrap modal 
 my-change-password

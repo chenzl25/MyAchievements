@@ -5,7 +5,7 @@
   "main": "",
   "scripts": {
     "test": "test",
-    "start": "./backend/bin/www & node server.js",
+    "start": "DEBUG=api:* ./backend/bin/www &  node server.js",
     "deploy": "NODE_ENV=production webpack -p --config webpack.config.pro.js"
   },
   "repository": {

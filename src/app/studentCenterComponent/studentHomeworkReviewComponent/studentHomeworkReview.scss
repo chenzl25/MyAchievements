@@ -1,0 +1,58 @@
+.homework-owner-name {
+	font-size: 30px;
+	text-align: center;
+}
+.homework-review-score {
+	margin-top: 20px;
+	font-size: 25px;
+	text-align: center;
+}
+.review-score {
+	height: 190px;
+	font-size: 25px;
+	text-align: center;
+}
+.homework-review-message,
+.review-message {
+	font-size: 20px;
+	padding-left: 20px;
+	padding-right: 20px;
+	word-break: break-all;
+	white-space: pre-wrap;
+	overflow-y: auto;
+	height: 200px;
+	background: #FCF4F4;
+}
+.homework-image {
+	width: 100%;
+	height: 200px;
+}
+.setup-create-review-button,
+.setup-update-review-button {
+	margin-top: 49px;
+}
+textarea {
+	height: 200px;
+	font-size: 25px;
+}
+input#review-create-score,
+input#review-update-score {
+	height: 50px;
+	font-size: 25px;
+}
+.homework-final-message {
+	font-size: 20px;
+	padding-left: 20px;
+	padding-right: 20px;
+	word-break: break-all;
+	white-space: pre-wrap;
+	overflow-y: auto;
+	height: 200px;
+	background: #FCF4F4;
+}
+.homework-final-score {
+	height: 200px;
+	font-size: 25px;
+	text-align: center;
+	background: #11FBDC;
+}

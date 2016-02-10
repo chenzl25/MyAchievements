@@ -1,0 +1,76 @@
+ul.list-group
+  li.list-group-item.col-sm-4(*ngFor="#assignmentItem of studentData?.LINK_assignments")
+    .container-fluid
+      .row.assignment-top
+        .col-sm-12.col-xs-12.bg-info {{assignmentItem?.name}}
+          span.label.label-primary.pull-right {{assignmentItem?.state}}
+      .row.assignment-time {{(assignmentItem?.from | time_stamp) + " ---> " + (assignmentItem?.end | time_stamp)}}
+      .row
+        img.homework-image([src]="assignmentItem._id | homework_image:studentData.LINK_homeworks")
+      .row.assignment-link
+        .col-sm-4.col-xs-4
+          a([href]="assignmentItem?.link") 作业链接
+        .col-sm-3.col-xs-2
+          a([href]="assignmentItem._id | homework_source:studentData.LINK_homeworks", *ngIf="assignmentItem._id | homework_source:studentData.LINK_homeworks") 源代码
+        .col-sm-2.col-xs-2
+          a([routerLink]="['HomeworkReview',{assignmentId:assignmentItem._id}]") 评审
+        .col-sm-3.col-xs-3(*ngIf="!(assignmentItem._id | homework_source:studentData.LINK_homeworks)")
+          a(data-toggle="modal",data-target="#myCreateHomeworkModal",(click)="onClickSetUpCreateHomework(assignmentItem._id)") 提交作业
+        .col-sm-3.col-xs-3(*ngIf="assignmentItem._id | homework_source:studentData.LINK_homeworks")
+          a(data-toggle="modal",data-target="#myUpdateHomeworkModal",(click)="onClickSetUpUpdateHomework(assignmentItem._id)") 重交作业
+
+.modal.fade(id="myCreateHomeworkModal",tabindex="-1",role="dialog",aria-labelledby="myCreateHomeworkModalLabel")
+  .modal-dialog(role="document")
+    .modal-content
+      .modal-header
+        button.close(type="button",data-dismiss="modal",aria-label="Close")
+          span(aria-hidden="true") &times;
+        h4.modal-title(id="myCreateHomeworkModalLabel") 提交作业
+        .modal-body
+          form.create-homework-form
+            .form-group
+              label(for="homework-create-github")
+              input.form-control(type="text",[(ngModel)]="inputHomeworkGithub",id="homework-create-github", placeholder="作业Github链接")
+            .form-group
+              label(for="homework-create-message")
+              input.form-control(type="text",[(ngModel)]="inputHomeworkMessage",id="homework-create-message", placeholder="作业附言")
+            .form-group
+              label(for="homework-create-source") 作业源代码
+              input(type="file",id="homework-create-source")
+            .form-group
+              label(for="homework-create-image") 作业预览图
+              input(type="file",id="homework-create-image")
+          .messages-container
+            ul.messages-list
+              li([ngClass]="{'text-warning':!outputSuccess, 'text-success':outputSuccess}" ,*ngFor="#message of outputMessages") {{message}}
+        .modal-footer
+          button.btn.btn-default(type="button", data-dismiss="modal") 关闭
+          button.btn.btn-primary(type="button",(click)="onClickCreateHomework()") 提交
+
+.modal.fade(id="myUpdateHomeworkModal",tabindex="-1",role="dialog",aria-labelledby="myUpdateHomeworkModalLabel")
+  .modal-dialog(role="document")
+    .modal-content
+      .modal-header
+        button.close(type="button",data-dismiss="modal",aria-label="Close")
+          span(aria-hidden="true") &times;
+        h4.modal-title(id="myUpdateHomeworkModalLabel") 重交作业
+        .modal-body
+          form.update-homework-form
+            .form-group
+              label(for="homework-update-github")
+              input.form-control(type="text",[(ngModel)]="inputHomeworkGithub",id="homework-update-github", placeholder="作业Github链接")
+            .form-group
+              label(for="homework-update-message")
+              input.form-control(type="text",[(ngModel)]="inputHomeworkMessage",id="homework-update-message", placeholder="作业附言")
+            .form-group
+              label(for="homework-update-source") 作业源代码
+              input(type="file",id="homework-update-source")
+            .form-group
+              label(for="homework-update-image") 作业预览图
+              input(type="file",id="homework-update-image")
+          .messages-container
+            ul.messages-list
+              li([ngClass]="{'text-warning':!outputSuccess, 'text-success':outputSuccess}" ,*ngFor="#message of outputMessages") {{message}}
+        .modal-footer
+          button.btn.btn-default(type="button", data-dismiss="modal") 关闭
+          button.btn.btn-primary(type="button",(click)="onClickUpdateHomework()") 重交

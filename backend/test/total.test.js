@@ -914,6 +914,7 @@ describe('Total test', function() {
 		agentToReview 
 			.get('/Sapi/assignment/'+assignmentId+'/toReviewHomeworks')
 			.end(function(err, res) {
+				console.log(res.body)
 				reviewId = res.body.homeworksData[0].LINK_review._id
 				expect(res.body.error).equal(false);
 				done();

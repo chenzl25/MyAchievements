@@ -1,5 +1,21 @@
 type ObjectId = string;
+interface LINK_owner {
+  name: string;
+  email: string;
+}
+interface LINK_group {
+  _id: ObjectId;
+  toReviewGroupId: ObjectId;
+  name: string;
+  names: string[];
+}
+interface LINK_class {
+  _id: ObjectId;
+  name: string;
+  names: string[];
+}
 export interface Homework {
+  _id: ObjectId;
   ownerId: ObjectId;
   __v: number;
   assignmentId: ObjectId;
@@ -12,16 +28,16 @@ export interface Homework {
   classRank: string;
   finalScore: string;
   finalMessage: string;
-  LINK_owner: any; //for assistant, teacher
+  LINK_owner: LINK_owner; //for assistant, teacher
   // {name:
   //  email:}
-  LINK_group: any; //for assistant, teacher
+  LINK_group: LINK_group; //for assistant, teacher
   // {_id:
   //  name:}
-  LINK_class: any; //for teacher 
+  LINK_class: LINK_class; //for teacher 
   // {_id:
   //  name:}
-  LINK_review: any;  // only one. be used to check update or create review.
+  LINK_review: Review;  // only one. be used to check update or create review.
   // review
   LINK_assignment: LINK_assignment;
   // {name:assignmentData.name,
@@ -40,7 +56,7 @@ export interface Assignment {
   end: string;
   homeworksId: ObjectId[];
   classsId: ObjectId[];
-  LINK_homeworks: any[];  //only for get to link other datas
+  LINK_homeworks: Homework[];  //only for get to link other datas
 }
 export  interface Review {
   _id: ObjectId;
@@ -59,8 +75,8 @@ export  interface Group {
   assistantsId: ObjectId[];
   studentsId: ObjectId[];
   toReviewGroupId: ObjectId,
-  LINK_assistants: any[],  //only for get to link other datas
-  LINK_students: any[],
+  LINK_assistants: any[],  // now no usage
+  LINK_students: any[],  // now no usage
   indicate: boolean; // only in the front-end run-time
 }
 export  interface Class {
@@ -71,8 +87,8 @@ export  interface Class {
   assignmentsId: ObjectId[];
   teachersId: ObjectId[];
   LINK_assignments: LINK_assignment[],  //only for get to link other datas
-  LINK_teachers: any[],
-  LINK_groups: any[],
+  LINK_teachers: any[], // now no usage
+  LINK_groups: any[], // now no usage
   indicate: boolean; // only in the front-end run-time
 }
 
@@ -88,9 +104,9 @@ export interface User {
   classsId: ObjectId[];
   groupsId: ObjectId[];
   LINK_homeworks: [Homework],
-  LINK_group: any;// if assistant {names:[]} else {name:string}
+  LINK_group: LINK_group;// if assistant {names:[]} else {name:string}
 
-  LINK_class: any;// if teacher {names:[]} else {name:string}
+  LINK_class: LINK_class;// if teacher {names:[]} else {name:string}
   LINK_assignments: LINK_assignment[]; //{_id, name, link, from, end, state}
 }
 interface LINK_assignment {

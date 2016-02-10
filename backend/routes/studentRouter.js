@@ -87,6 +87,7 @@ router.put('/homework/:homeworkId',
     errorMessage => res.json({error: true, message: errorMessage})
   );
 })
+// so bad api....
 router.post('/group/:groupId/student/:studentId/homework/:homeworkId/review', 
   tools.validateMiddleware(validator.validateCreateReview.bind(validator)),
   function(req, res) {
