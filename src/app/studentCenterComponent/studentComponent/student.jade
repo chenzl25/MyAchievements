@@ -5,6 +5,9 @@ ul.list-group
         .col-sm-12.col-xs-12.bg-info {{assignmentItem?.name}}
           span.label.label-primary.pull-right {{assignmentItem?.state}}
       .row.assignment-time {{(assignmentItem?.from | time_stamp) + " ---> " + (assignmentItem?.end | time_stamp)}}
+      .row.rank-row
+        .col-sm-6.col-xs-6 {{'班级排名: ' + (assignmentItem._id | homework_class_rank:studentData.LINK_homeworks)}}
+        .col-sm-6.col-xs-6 {{'小组排名: ' + (assignmentItem._id | homework_group_rank:studentData.LINK_homeworks)}}
       .row
         img.homework-image([src]="assignmentItem._id | homework_image:studentData.LINK_homeworks")
       .row.assignment-link
@@ -13,7 +16,7 @@ ul.list-group
         .col-sm-3.col-xs-2
           a([href]="assignmentItem._id | homework_source:studentData.LINK_homeworks", *ngIf="assignmentItem._id | homework_source:studentData.LINK_homeworks") 源代码
         .col-sm-2.col-xs-2
-          a([routerLink]="['HomeworkReview',{assignmentId:assignmentItem._id}]") 评审
+          a([routerLink]="['StudentHomeworkReview',{assignmentId:assignmentItem._id}]") 评审
         .col-sm-3.col-xs-3(*ngIf="!(assignmentItem._id | homework_source:studentData.LINK_homeworks)")
           a(data-toggle="modal",data-target="#myCreateHomeworkModal",(click)="onClickSetUpCreateHomework(assignmentItem._id)") 提交作业
         .col-sm-3.col-xs-3(*ngIf="assignmentItem._id | homework_source:studentData.LINK_homeworks")

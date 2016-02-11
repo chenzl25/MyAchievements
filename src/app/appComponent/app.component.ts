@@ -3,9 +3,9 @@ import {RouteConfig, ROUTER_DIRECTIVES} from 'angular2/router';
 
 import {LoginComponent} from '../loginComponent/login.component';
 import {ManagerComponent} from '../managerComponent/manager.component';
-import {TeacherComponent} from '../teacherComponent/teacher.component';
-import {AssistantComponent} from '../assistantComponent/assistant.component';
-import {CrisisCenterComponent} from '../studentCenterComponent/studentCenter.component';
+import {TeacherCenterComponent} from '../teacherCenterComponent/teacherCenter.component';
+import {AssistantCenterComponent} from '../assistantCenterComponent/assistantCenter.component';
+import {StudentCenterComponent} from '../studentCenterComponent/studentCenter.component';
 // import {ChangePasswordComponent} from '../changePasswordComponent/changePassword.component';
 
 @Component({
@@ -17,9 +17,9 @@ import {CrisisCenterComponent} from '../studentCenterComponent/studentCenter.com
 @RouteConfig([
 	{ path: '/login', name: 'Login', component: LoginComponent, useAsDefault: true },
 	{ path: '/manager/:account', name: 'Manager', component: ManagerComponent},
-	{ path: '/teacher/:account', name: 'Teacher', component: TeacherComponent },
-	{ path: '/assistant/:account', name: 'Assistant', component: AssistantComponent },
-	{ path: '/student/:account/...', name: 'Student', component: CrisisCenterComponent},
+	{ path: '/teacher/:account/...', name: 'Teacher', component: TeacherCenterComponent },
+	{ path: '/assistant/:account/...', name: 'Assistant', component: AssistantCenterComponent },
+	{ path: '/student/:account/...', name: 'Student', component: StudentCenterComponent},
 	// { path: '/changePassword', name: 'ChangePassword', component: ChangePasswordComponent},
 	{ path: '/...', name: 'Asteroid', redirectTo: ['Login'] }
 ])

@@ -10,6 +10,9 @@ import {I18nPipe} from '../../lib/i18n.pipe';
 import {TimeStampPipe} from '../../lib/timeStamp.pipe';
 import {HomeworkImagePipe} from './homeworkImage.pipe';
 import {HomeworkSourcePipe} from './homeworkSource.pipe';
+import {HomeworkFinalScorePipe} from './homeworkFinalScore.pipe';
+import {HomeworkClassRankPipe} from './homeworkClassRank.pipe';
+import {HomeworkGroupRankPipe} from './homeworkGroupRank.pipe';
 @Component({
 	selector: 'student',
 	template: require('./student.jade'),
@@ -19,7 +22,10 @@ import {HomeworkSourcePipe} from './homeworkSource.pipe';
 							 ROUTER_DIRECTIVES],
 	pipes: [TimeStampPipe,
 					HomeworkImagePipe,
-					HomeworkSourcePipe,]
+					HomeworkSourcePipe,
+					HomeworkFinalScorePipe,
+					HomeworkClassRankPipe,
+					HomeworkGroupRankPipe]
 })
 export class StudentComponent implements OnInit {
 	studentData: User;
@@ -37,7 +43,6 @@ export class StudentComponent implements OnInit {
   						private router: Router) { }
 	ngOnInit() {
 		this.studentData = this.userService.getUser();
-		console.log(this.studentData)
 	}
 	onClickSetUpCreateHomework(assignmentId: string):void {
 		this.clearInput();
@@ -59,7 +64,6 @@ export class StudentComponent implements OnInit {
 						this.outputSuccess = true;					
 						this.outputMessages = ['ok'];
 						_homeworkData_.LINK_assignment = this.studentData.LINK_assignments.find(assignment => assignment._id === _homeworkData_.assignmentId);						
-						console.log(_homeworkData_);
 						this.studentData.LINK_homeworks.push(_homeworkData_)
 						this.userService.setUser(this.studentData);
 					},
@@ -94,7 +98,6 @@ export class StudentComponent implements OnInit {
 					homeworkData => {
 						this.outputSuccess = true;					
 						this.outputMessages = ['ok'];
-						console.log(homeworkData);
 						this.studentData.LINK_homeworks.forEach(homework => {
 							if(homework._id === homeworkData._id) {
 								homework.github = homeworkData.github;

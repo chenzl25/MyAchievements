@@ -29,7 +29,9 @@ describe('Manager test', function() {
     Assignment.collection.drop();
     Homework.collection.drop();
     Review.collection.drop();
-    done();
+    User.register('manager', 'manager', 'Manager', '595084778@qq.com', 'manager')
+				.then(userData => done(),
+							errorMessage => done())
   });
   after(function(done){
     User.collection.drop();
@@ -40,79 +42,79 @@ describe('Manager test', function() {
     Review.collection.drop();
     done();
   });
-	it('register only by name', function(done) {
-		chai.request(server)
-				.post('/Mapi/Mregister')
-				.send({'name':'dylan'})
-				.end(function(err, res) {
-					expect(res.body.error).equal(true);
-					expect(res.body.message).to.have.length(3);
-					expect(res.body.message.indexOf('账号为空')).not.equal(-1);
-					expect(res.body.message.indexOf('密码为空')).not.equal(-1);
-					expect(res.body.message.indexOf('邮箱为空')).not.equal(-1);
-					done();
-				});
-	});
-	it('register only by account', function(done) {
-		chai.request(server)
-				.post('/Mapi/Mregister')
-				.send({'account':'14331048'})
-				.end(function(err, res) {
-					expect(res.body.error).equal(true);
-					expect(res.body.message).to.have.length(3);
-					expect(res.body.message.indexOf('密码为空')).not.equal(-1);
-					expect(res.body.message.indexOf('名字为空')).not.equal(-1);
-					expect(res.body.message.indexOf('邮箱为空')).not.equal(-1);
-					done();
-				});
-	});
-	it('register only by password/manager', function(done) {
-		chai.request(server)
-				.post('/Mapi/Mregister')
-				.send({'password':'111111'})
-				.end(function(err, res) {
-					expect(res.body.error).equal(true);
-					expect(res.body.message).to.have.length(3);
-					expect(res.body.message.indexOf('账号为空')).not.equal(-1);
-					expect(res.body.message.indexOf('名字为空')).not.equal(-1);
-					expect(res.body.message.indexOf('邮箱为空')).not.equal(-1);
-					done();
-				});
-	});
-	it('register unformat', function(done) {
-		chai.request(server)
-				.post('/Mapi/Mregister')
-				.send({'account': '11111','password':'11111', 'name':'hahasadasdsasdadsaadsadadsa'})
-				.end(function(err, res) {
-					expect(res.body.error).equal(true);
-					expect(res.body.message).to.have.length(4);
-					expect(res.body.message.indexOf('用户名6~18位英文字母、数字')).not.equal(-1);
-					expect(res.body.message.indexOf('密码6~18位英文字母、数字')).not.equal(-1);
-					expect(res.body.message.indexOf('名字长度为2-20个字符')).not.equal(-1);
-					expect(res.body.message.indexOf('邮箱为空')).not.equal(-1);
-					done();
-				});
-	});
-	it('register successfully', function(done) {
-		chai.request(server)
-				.post('/Mapi/Mregister')
-				.send({'account':'111111', 'password':'111111', 'name':'dylan', 'email':"595084778@qq.com"})
-				.end(function(err, res) {
-					expect(res.body.error).equal(false);
-					expect(res.body.userData).to.be.a('object');
-					done();
-				});
-	});
-	it('register already have registerd', function(done) {
-		chai.request(server)
-				.post('/Mapi/Mregister')
-				.send({'account':'111111', 'password':'111111', 'name':'dylan', 'email':"595084778@qq.com"})
-				.end(function(err, res) {
-					expect(res.body.error).equal(true);
-					expect(res.body.message).equal('账号已被注册');
-					done();
-				});
-	});
+	// it('register only by name', function(done) {
+	// 	chai.request(server)
+	// 			.post('/Mapi/Mregister')
+	// 			.send({'name':'dylan'})
+	// 			.end(function(err, res) {
+	// 				expect(res.body.error).equal(true);
+	// 				expect(res.body.message).to.have.length(3);
+	// 				expect(res.body.message.indexOf('账号为空')).not.equal(-1);
+	// 				expect(res.body.message.indexOf('密码为空')).not.equal(-1);
+	// 				expect(res.body.message.indexOf('邮箱为空')).not.equal(-1);
+	// 				done();
+	// 			});
+	// });
+	// it('register only by account', function(done) {
+	// 	chai.request(server)
+	// 			.post('/Mapi/Mregister')
+	// 			.send({'account':'14331048'})
+	// 			.end(function(err, res) {
+	// 				expect(res.body.error).equal(true);
+	// 				expect(res.body.message).to.have.length(3);
+	// 				expect(res.body.message.indexOf('密码为空')).not.equal(-1);
+	// 				expect(res.body.message.indexOf('名字为空')).not.equal(-1);
+	// 				expect(res.body.message.indexOf('邮箱为空')).not.equal(-1);
+	// 				done();
+	// 			});
+	// });
+	// it('register only by password/manager', function(done) {
+	// 	chai.request(server)
+	// 			.post('/Mapi/Mregister')
+	// 			.send({'password':'111111'})
+	// 			.end(function(err, res) {
+	// 				expect(res.body.error).equal(true);
+	// 				expect(res.body.message).to.have.length(3);
+	// 				expect(res.body.message.indexOf('账号为空')).not.equal(-1);
+	// 				expect(res.body.message.indexOf('名字为空')).not.equal(-1);
+	// 				expect(res.body.message.indexOf('邮箱为空')).not.equal(-1);
+	// 				done();
+	// 			});
+	// });
+	// it('register unformat', function(done) {
+	// 	chai.request(server)
+	// 			.post('/Mapi/Mregister')
+	// 			.send({'account': '11111','password':'11111', 'name':'hahasadasdsasdadsaadsadadsa'})
+	// 			.end(function(err, res) {
+	// 				expect(res.body.error).equal(true);
+	// 				expect(res.body.message).to.have.length(4);
+	// 				expect(res.body.message.indexOf('用户名6~18位英文字母、数字')).not.equal(-1);
+	// 				expect(res.body.message.indexOf('密码6~18位英文字母、数字')).not.equal(-1);
+	// 				expect(res.body.message.indexOf('名字长度为2-20个字符')).not.equal(-1);
+	// 				expect(res.body.message.indexOf('邮箱为空')).not.equal(-1);
+	// 				done();
+	// 			});
+	// });
+	// it('register successfully', function(done) {
+	// 	chai.request(server)
+	// 			.post('/Mapi/Mregister')
+	// 			.send({'account':'111111', 'password':'111111', 'name':'dylan', 'email':"595084778@qq.com"})
+	// 			.end(function(err, res) {
+	// 				expect(res.body.error).equal(false);
+	// 				expect(res.body.userData).to.be.a('object');
+	// 				done();
+	// 			});
+	// });
+	// it('register already have registerd', function(done) {
+	// 	chai.request(server)
+	// 			.post('/Mapi/Mregister')
+	// 			.send({'account':'111111', 'password':'111111', 'name':'dylan', 'email':"595084778@qq.com"})
+	// 			.end(function(err, res) {
+	// 				expect(res.body.error).equal(true);
+	// 				expect(res.body.message).equal('账号已被注册');
+	// 				done();
+	// 			});
+	// });
 	it('login fail for password wrong', function(done) {
 		chai.request(server)
 				.post('/api/login')
@@ -135,7 +137,7 @@ describe('Manager test', function() {
 	it('login successfully', function(done) {
 		chai.request(server)
 				.post('/api/login')
-				.send({'account':'111111', 'password':'111111'})
+				.send({'account':'manager', 'password':'manager'}) // then open the server it will register auto
 				.end(function(err, res) {
 					expect(res.body.error).equal(false);
 					expect(res.body.userData.position).equal('manager');
@@ -143,23 +145,33 @@ describe('Manager test', function() {
 				});
 	});
 	
+	// it('should register login successfully', function(done) {
+	// 	chai.request(server)
+	// 			.post('/Mapi/Mregister')
+	// 			.send({account:'444444', password:'444444', name:'haha', email:"chenzl25@mail2.sysu.edu.cn"})
+	// 			.then((res) => {
+	// 				expect(res.body.error).equal(false);	
+	// 				agent = chai.request.agent(server);
+	// 				agent
+	// 					.post('/api/login')
+	// 					.send({'account':'444444', 'password':'444444'})
+	// 					.then((res) => {
+	// 				    expect(res.body.error).equal(false);
+	// 				    done();
+	// 					});
+	// 			}).catch(function(err) {
+	// 				done(err);
+	// 			});
+	// });
 	it('should register login successfully', function(done) {
-		chai.request(server)
-				.post('/Mapi/Mregister')
-				.send({account:'444444', password:'444444', name:'haha', email:"chenzl25@mail2.sysu.edu.cn"})
-				.then((res) => {
-					expect(res.body.error).equal(false);	
-					agent = chai.request.agent(server);
-					agent
-						.post('/api/login')
-						.send({'account':'444444', 'password':'444444'})
-						.then((res) => {
-					    expect(res.body.error).equal(false);
-					    done();
-						});
-				}).catch(function(err) {
-					done(err);
-				});
+		agent = chai.request.agent(server);
+		agent
+			.post('/api/login')
+			.send({'account':'manager', 'password':'manager'})
+			.then((res) =>{
+		    expect(res.body.error).equal(false);
+		    done();
+			});
 	});
 	it('register successfully', function(done) {
 		agent

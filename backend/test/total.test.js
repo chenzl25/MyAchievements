@@ -49,7 +49,10 @@ describe('Total test', function() {
     Assignment.collection.drop();
     Homework.collection.drop();
     Review.collection.drop();
-    done();
+    User.register('manager', 'manager', 'Manager', '595084778@qq.com', 'manager')
+				.then(userData => done(),
+							errorMessage => done())
+    
   });
   after(function(done){
     User.collection.drop();
@@ -60,23 +63,33 @@ describe('Total test', function() {
     Review.collection.drop();
     done();
   });
+	// it('should register login successfully', function(done) {
+	// 	chai.request(server)
+	// 			.post('/Mapi/Mregister')
+	// 			.send({account:'444444', password:'444444', name:'haha', email:"chenzl25@mail2.sysu.edu.cn"})
+	// 			.then((res) => {
+	// 				expect(res.body.error).equal(false);	
+	// 				agentManager = chai.request.agent(server);
+	// 				agentManager
+	// 					.post('/api/login')
+	// 					.send({'account':'444444', 'password':'444444'})
+	// 					.then((res) =>{
+	// 				    expect(res.body.error).equal(false);
+	// 				    done();
+	// 					});
+	// 			}).catch(function(err) {
+	// 				done(err);
+	// 			});
+	// });
 	it('should register login successfully', function(done) {
-		chai.request(server)
-				.post('/Mapi/Mregister')
-				.send({account:'444444', password:'444444', name:'haha', email:"chenzl25@mail2.sysu.edu.cn"})
-				.then((res) => {
-					expect(res.body.error).equal(false);	
-					agentManager = chai.request.agent(server);
-					agentManager
-						.post('/api/login')
-						.send({'account':'444444', 'password':'444444'})
-						.then((res) =>{
-					    expect(res.body.error).equal(false);
-					    done();
-						});
-				}).catch(function(err) {
-					done(err);
-				});
+		agentManager = chai.request.agent(server);
+		agentManager
+			.post('/api/login')
+			.send({'account':'manager', 'password':'manager'})
+			.then((res) =>{
+		    expect(res.body.error).equal(false);
+		    done();
+			});
 	});
 	it('register successfully', function(done) {
 		agentManager
@@ -620,14 +633,12 @@ describe('Total test', function() {
 			.post('/api/login')
 			.send({'account':'assistant1', 'password':'assistant1'})
 			.end(function(err, res) {
-				console.log(res.body)
 				expect(res.body.error).equal(false);
 		    done();
 			})
 			// .then((res) =>{
 		 //    expect(res.body.error).equal(false);
 		 //    done();
-			// },err => {console.log(err);done(err);});
 	})
 	it('assistant finalReview successfully', function(done) {
 		agentAssistant
@@ -914,7 +925,6 @@ describe('Total test', function() {
 		agentToReview 
 			.get('/Sapi/assignment/'+assignmentId+'/toReviewHomeworks')
 			.end(function(err, res) {
-				console.log(res.body)
 				reviewId = res.body.homeworksData[0].LINK_review._id
 				expect(res.body.error).equal(false);
 				done();

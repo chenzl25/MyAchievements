@@ -16,9 +16,9 @@ import {StudentService} from './student.service';
 })
 @RouteConfig([
   {path:'/', name: 'StudentRoot', component: StudentComponent, useAsDefault: true},
-  {path:'/homeworkReview/:assignmentId', name: 'HomeworkReview', component: StudentHomeoworkReviewComponent}
+  {path:'/homeworkReview/:assignmentId', name: 'StudentHomeworkReview', component: StudentHomeoworkReviewComponent}
 ])
-export class CrisisCenterComponent implements OnInit {
+export class StudentCenterComponent implements OnInit {
 	studentData: User;
   studentLinkName: string = 'StudentRoot';
 	constructor(private userService: UserService) {}

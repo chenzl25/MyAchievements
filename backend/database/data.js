@@ -575,7 +575,8 @@ UserSchema.methods.findHomeworkByAssignmentID = function(assignmentId) {
                   for (var i = 0; i < homeworksData.length; i++)
                     if (homeworksData[i].assignmentId.toString() === assignmentId.toString())
                       return Promise.resolve(homeworksData[i])
-                  return Promise.reject('用户居然没找到作业，出错了')
+                  return Promise.resolve(null);
+                  // return Promise.reject('用户居然没找到作业，出错了')
                 })
 }
 UserSchema.methods.whetherInGroup = function(groupId) {
@@ -941,9 +942,12 @@ AssignmentSchema.methods.calculateAllRank = function() {
   )
   return Promise.all(homeworksPromise)
                 .then(homeworksData => {
+                  // if (homeworksData.length === 0)
+                  //   return Promise.resolve('')
                   if (!homeworksData.every(homeworkData => homeworkData.finalScore !== null))
                     return Promise.reject('有些作业还没评审')
-                  homeworksData.sort((a,b) => parseInt(b.finalScore) - parseInt(a.finalScore))
+                  if (homeworksData && homeworksData.length && homeworksData.length >= 2)
+                    homeworksData.sort((a,b) => parseInt(b.finalScore) - parseInt(a.finalScore))
                   var hasClassRankHomeworksDataPromise = homeworksData.map((homeworkData,index) =>
                     homeworkData.updateProperty({classRank: String(index+1)})
                                 .then(homeworkData => homeworkData.save())
@@ -1043,10 +1047,13 @@ HomeworkSchema.methods.getGroupRank = function() {
                var homeworksDataPromise = studentsId.map(studentId => {
                  return User.findStudentById(studentId)
                             .then(studentData => studentData.findHomeworkByAssignmentID(assignmentId))
+                            // .then(homeworkData => homeworkData !== null? Promise.resolve(homeworkData):Promise.reject(null))
                })
                return Promise.all(homeworksDataPromise)
                              .then(homeworksData => {
-                               homeworksData.sort((a,b) => parseInt(b.finalScore) - parseInt(a.finalScore))
+                               homeworksData = homeworksData.filter(homeworkData => homeworkData !== null);
+                               if (homeworksData && homeworksData.length && homeworksData.length >= 2)
+                                 homeworksData.sort((a,b) => parseInt(b.finalScore) - parseInt(a.finalScore))
                                for (var i = 0; i < homeworksData.length; i++)
                                  if (homeworksData[i]._id.toString() === homeworkId.toString())
                                    return homeworksData[i].updateProperty({groupRank: String(i+1)})

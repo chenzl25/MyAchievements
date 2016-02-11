@@ -17,13 +17,14 @@ var Review = require('../database/data').Review;
 var express = require('express');
 var router = express.Router();
 // register the manager
-router.post('/Mregister', tools.validateMiddleware(validator.validateMRegister.bind(validator)), function(req, res) {
-	debug(req.body);
-  User.register(req.body.account, req.body.password, req.body.name, req.body.email, 'manager').then(
-    userData => res.json({error: false, userData:userData}),
-    errorMessage => res.json({error: true, message: errorMessage})
-  );	
-})
+// router.post('/Mregister', tools.validateMiddleware(validator.validateMRegister.bind(validator)), function(req, res) {
+// 	debug(req.body);
+//   User.register(req.body.account, req.body.password, req.body.name, req.body.email, 'manager').then(
+//     userData => res.json({error: false, userData:userData}),
+//     errorMessage => res.json({error: true, message: errorMessage})
+//   );	
+// })
+// need to delete
 
 router.use(tools.checkLoginMiddleware);
 router.use(tools.checkManagerMiddleware);

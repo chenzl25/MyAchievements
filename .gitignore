@@ -1,4 +1,4 @@
 node_modules/
 backend/node_modeules/
-bower_components/
 backend/uploads/
+dist/

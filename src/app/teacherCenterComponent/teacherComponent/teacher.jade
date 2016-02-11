@@ -1,4 +1,3 @@
-my-nav([userData]="teacherData")
 ul.list-group
   a.list-group-item(data-toggle="modal",data-target="#myCreateAssignmentModal",(click)="onClickSetUpCreateAssignment()") 布置作业
   li.list-group-item(*ngFor="#assignmentItem of teacherData?.LINK_assignments")
@@ -6,10 +5,14 @@ ul.list-group
       .col-sm-1
         span.label.label-primary {{assignmentItem?.state}}
       .col-sm-2 {{assignmentItem?.name}}
-      .col-sm-2
+      .col-sm-1
         a([href]="assignmentItem?.link") 作业链接
+      .col-sm-1
+        a([routerLink]="['TeacherHomeworkReview',{assignmentId:assignmentItem._id}]") 评审
       .col-sm-3 {{"from : " + (assignmentItem?.from | time_stamp)}}
-      .col-sm-3 {{"end : " + (assignmentItem?.end | time_stamp)}}
+      .col-sm-2 {{"end : " + (assignmentItem?.end | time_stamp)}}
+      .col-sm-1
+        button.btn.btn-default((click)="onClickGetRank(assignmentItem._id)") 计算排名
       .col-sm-1
         button.btn.btn-default(data-toggle="modal",data-target="#myUpdateAssignmentModal", (click)="onClickSetUpUpdateAssignment(assignmentItem)") 修改
 

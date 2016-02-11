@@ -41,8 +41,7 @@ export class StudentHomeoworkReviewComponent implements OnInit {
   	this.myHomeworkItem = this.studentData.LINK_homeworks.find(homework => homework.assignmentId === this.toReviewAssignmentId)
 		this.studentService.getToReviewHomeworks(this.toReviewAssignmentId)
 										 	 .then(homeworksData => this.toReviewHomeworkList = homeworksData,
-											       errorMessage => console.log(errorMessage))
-											 .then(homeworksData => console.log(homeworksData));
+											       errorMessage => alert(errorMessage))
   }
   onClickMyReviewTab():void {
 		this.tabReviewOthers = true;
@@ -54,7 +53,6 @@ export class StudentHomeoworkReviewComponent implements OnInit {
 		this.studentService.getHomeworkReviews(this.myHomeworkItem._id)
 											 .then(
 											 	 reviewsData => {
-														console.log(reviewsData);
 														this.myHomeworkReviewsList = reviewsData;
 											 	 },
 											 	 errorMessage => {
@@ -80,7 +78,6 @@ export class StudentHomeoworkReviewComponent implements OnInit {
 						this.toReviewHomeworkList.forEach(homework => {
 							if (homework._id === _reviewData_.homeworkId) {
 								homework.LINK_review = _reviewData_;
-								console.log(homework);
 							}
 						})
 						this.outputSuccess = true;
@@ -99,7 +96,6 @@ export class StudentHomeoworkReviewComponent implements OnInit {
 		this.inputReviewMessage = originalReviewMessage;
 	}
 	onClickUpdateReview():void {
-		console.log(this.inputReviewMessage)
 		this.studentService.updateReview(
 					this.inputReviewId,
 					this.inputReviewScore,
@@ -110,7 +106,6 @@ export class StudentHomeoworkReviewComponent implements OnInit {
 						this.toReviewHomeworkList.forEach(homework => {
 							if (homework._id === _reviewData_.homeworkId) {
 								homework.LINK_review = _reviewData_;
-								console.log(homework);
 							}
 						})
 						this.outputSuccess = true;

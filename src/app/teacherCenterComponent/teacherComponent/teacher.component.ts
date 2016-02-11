@@ -1,13 +1,13 @@
 import {Component, OnInit} from 'angular2/core';
 import {NgForm, NgClass, NgIf} from 'angular2/common';
-import {NavComponent} from '../navComponent/nav.component';
-import {Router} from 'angular2/router';
-import {UserService} from '../lib/user.service';
-import {StorageService} from '../lib/storage.service';
-import {User, Class, Group, Assignment} from '../lib/interface';
-import {TeacherService} from './teacher.service';
-import {I18nPipe} from '../lib/i18n.pipe';
-import {TimeStampPipe} from '../lib/timeStamp.pipe';
+import {NavComponent} from '../../navComponent/nav.component';
+import {Router, ROUTER_DIRECTIVES} from 'angular2/router';
+import {UserService} from '../../lib/user.service';
+import {StorageService} from '../../lib/storage.service';
+import {User, Class, Group, Assignment} from '../../lib/interface';
+import {TeacherService} from '../teacher.service';
+import {I18nPipe} from '../../lib/i18n.pipe';
+import {TimeStampPipe} from '../../lib/timeStamp.pipe';
 var moment = require('moment');
 
 @Component({
@@ -15,7 +15,7 @@ var moment = require('moment');
 	template: require('./teacher.jade'),
 	styles: [require('./teacher.scss')],
 	pipes: [TimeStampPipe],
-	directives: [NavComponent, NgClass],
+	directives: [NavComponent, NgClass,ROUTER_DIRECTIVES],
 	providers: [TeacherService]
 })
 export class TeacherComponent implements OnInit {
@@ -35,8 +35,6 @@ export class TeacherComponent implements OnInit {
   						private router: Router) { }
 	ngOnInit() {
 		this.teacherData = this.userService.getUser();
-		console.log(this.teacherData);
-		console.log(moment().format());
 	}
 	onClickSetUpCreateAssignment() {
 		this.clearInput();
@@ -52,7 +50,6 @@ export class TeacherComponent implements OnInit {
 					this.inputAssignmentEndTimeStamp)
 				.then(
 					assignmentData => {
-						console.log(assignmentData)
 						this.outputAssignmentSuccess = true;
 						this.outputAssignmentMessages = ['ok'];
 						this.teacherData.LINK_assignments.push({
@@ -90,7 +87,6 @@ export class TeacherComponent implements OnInit {
 					this.inputAssignmentEndTimeStamp)
 				.then(
 					assignmentData => {
-						console.log(assignmentData)
 						this.outputAssignmentSuccess = true;
 						this.outputAssignmentMessages = ['ok'];
 						this.teacherData.LINK_assignments.forEach(assignment => {
@@ -109,6 +105,11 @@ export class TeacherComponent implements OnInit {
 						this.outputAssignmentMessages = errorMessage;
 						this.clearInput();
 					})
+	}
+	onClickGetRank(assignmentId: string):void {
+		this.teacherService.getRank(assignmentId)
+											 .then(successMessage => alert('OK'),
+											 			 errorMessage => alert(errorMessage))
 	}
 	clearInput():void {
 		this.inputAssignmentName = "";

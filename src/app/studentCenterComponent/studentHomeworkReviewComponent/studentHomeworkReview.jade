@@ -13,13 +13,18 @@ ul.list-group(*ngIf="tabReviewOthers")
       .col-sm-7
         .row
           p.homework-review-message(*ngIf="homeworkItem.LINK_review") {{homeworkItem?.LINK_review?.message}}
-          p.homework-review-message(*ngIf="!homeworkItem.LINK_review") 你还没写任何评审你还没写任何评审你还没写任何评审你还没写任何评审你还没写任何评审你还没写任何评审你还没写任何评审你还没写任何评审你还没写任何评审你还没写任何评审你还没写任何评审你还没写任何评审你还没写任何评审你还没写任何评审你还没写任何评审你还没写任何评审你还没写任何评审 
+          p.homework-review-message(*ngIf="!homeworkItem.LINK_review") 你还没写任何评审 
       .col-sm-2.bg-info
         .row
           p.homework-owner-name {{homeworkItem?.LINK_owner?.name}} 
         .row
           p.homework-review-score(*ngIf="homeworkItem.LINK_review") {{'分数: '+homeworkItem?.LINK_review?.score}}
           p.homework-review-score(*ngIf="!homeworkItem.LINK_review") 分数: null
+        .row.link-row
+          .col-sm-6
+            a([href]="homeworkItem?.github") Github
+          .col-sm-6
+            a([href]="'proxy/' + homeworkItem?.source") 源代码
         .row
            button.btn.btn-primary.btn-block.setup-create-review-button(*ngIf="!homeworkItem.LINK_review",data-toggle="modal",data-target="#myCreateReviewModal",(click)="onClickSetUpCreateReview(homeworkItem.ownerId, homeworkItem._id)") 开始评审
            button.btn.btn-primary.btn-block.setup-update-review-button(*ngIf="homeworkItem.LINK_review",data-toggle="modal",data-target="#myUpdateReviewModal",(click)="onClickSetUpUpdateReview(homeworkItem.LINK_review._id, homeworkItem.LINK_review.score, homeworkItem.LINK_review.message)") 重新评审

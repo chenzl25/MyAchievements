@@ -1,0 +1,13 @@
+ul.list-group
+  li.list-group-item(*ngFor="#assignmentItem of assistantData?.LINK_assignments")
+    .row
+      .col-sm-1
+        span.label.label-primary {{assignmentItem?.state}}
+      .col-sm-2 {{assignmentItem?.name}}
+      .col-sm-1
+        a([href]="assignmentItem?.link") 作业链接
+      .col-sm-2
+        a([routerLink]="['AssistantHomeworkReview',{assignmentId:assignmentItem._id}]") 评审
+      .col-sm-3 {{"from : " + (assignmentItem?.from | time_stamp)}}
+      .col-sm-3 {{"end : " + (assignmentItem?.end | time_stamp)}}
+

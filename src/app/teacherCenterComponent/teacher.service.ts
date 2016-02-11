@@ -15,13 +15,13 @@ export class TeacherService {
     this.headers.append('Content-Type', 'application/json');
     this.options = new RequestOptions({ headers: this.headers });
   }
-  createAssignment(AssignmentName:string, AssignmentLink:string, AssignmentFrom, AssignmentEnd):Promise<any> {
+  createAssignment(assignmentName:string, assignmentLink:string, assignmentFrom: string, assignmentEnd: string):Promise<any> {
   	let createAssignmentUrl = 'proxy/Tapi/assignment';
     let input = {
-      name: AssignmentName,
-      link: AssignmentLink,
-      from: AssignmentFrom,
-      end: AssignmentEnd
+      name: assignmentName,
+      link: assignmentLink,
+      from: assignmentFrom,
+      end: assignmentEnd
     }
     let validateResult = this.validateService.validateCreateAssignment(input);
     if (validateResult)
@@ -34,13 +34,13 @@ export class TeacherService {
     								.then(res => res.error === false?res.assignmentData:Promise.reject(res.message))
     								.catch(err => this.errFilter(err))
   }
-  updateAssignment(AssignmentId: string, AssignmentName:string, AssignmentLink:string, AssignmentFrom, AssignmentEnd):Promise<any> {
-  	let createAssignmentUrl = `proxy/Tapi/assignment/${AssignmentId}`;
+  updateAssignment(assignmentId: string, assignmentName:string, assignmentLink:string, assignmentFrom: string, assignmentEnd: string):Promise<any> {
+  	let createAssignmentUrl = `proxy/Tapi/assignment/${assignmentId}`;
     let input = {
-      name: AssignmentName,
-      link: AssignmentLink,
-      from: AssignmentFrom,
-      end: AssignmentEnd
+      name: assignmentName,
+      link: assignmentLink,
+      from: assignmentFrom,
+      end: assignmentEnd
     }
     let validateResult = this.validateService.validateUpdateAssignment(input);
     if (validateResult)
@@ -53,17 +53,37 @@ export class TeacherService {
     								.then(res => res.error === false?res.assignmentData:Promise.reject(res.message))
     								.catch(err => this.errFilter(err))
   }
-  getToReviewHomeworksByAssignmentId(assignmentId: string):Promise<any> {
-  	let getToReviewHomeworksByAssignmentIdUrl = `proxy/Tapi'/assignment/${assignmentId}/toReviewHomeworks`;
+  createFinalReview(homeworkId: string, homeworkFinalScore: string, homeworkFinalMessage: string):Promise<any> {
+    let createFinalReviewUrl = `proxy/Tapi/homework/${homeworkId}/finalReview`;
+    let input = {
+      score: homeworkFinalScore,
+      message: homeworkFinalMessage
+    }
+    let validateResult = this.validateService.validateCreateReview(input);
+    if (validateResult)
+      return Promise.reject(validateResult)
+                    .catch(err => this.errFilter(err, ''));
+    let body = JSON.stringify(input)
+    return this.http.post(createFinalReviewUrl, body, this.options)
+                    .toPromise()
+                    .then(res => res.json())
+                    .then(res => res.error === false? Promise.resolve(res.homeworkData): Promise.reject(res.message))
+                    .catch(err => this.errFilter(err))
+  }
+  updateFinalReview(homeworkId: string, homeworkFinalScore: string, homeworkFinalMessage: string):Promise<any> {
+    return this.createFinalReview(homeworkId, homeworkFinalScore, homeworkFinalMessage);
+  }  
+  getToReviewHomeworks(assignmentId: string):Promise<any> {
+  	let getToReviewHomeworksByAssignmentIdUrl = `proxy/Tapi/assignment/${assignmentId}/toReviewHomeworks`;
     return this.http.get(getToReviewHomeworksByAssignmentIdUrl,this.options)
     								.toPromise()
     								.then(res => res.json())
     								.then(res => res.error === false?res.homeworksData:Promise.reject(res.message))
     								.catch(err => this.errFilter(err))
   }
-  getRankByAssignmentId(assignmentId: string):Promise<any> {
+  getRank(assignmentId: string):Promise<any> {
   	// after this method better to get the assignmentId again to update the homework score
-  	let getRankByAssignmentIdUrl = `proxy/Tapi'/assignment/${assignmentId}/rank`;
+  	let getRankByAssignmentIdUrl = `proxy/Tapi/assignment/${assignmentId}/rank`;
     return this.http.put(getRankByAssignmentIdUrl,'',this.options)
     								.toPromise()
     								.then(res => res.json())

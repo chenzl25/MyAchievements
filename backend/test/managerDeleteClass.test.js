@@ -35,7 +35,9 @@ describe('Manager delete', function() {
     Assignment.collection.drop();
     Homework.collection.drop();
     Review.collection.drop();
-    done();
+    User.register('manager', 'manager', 'Manager', '595084778@qq.com', 'manager')
+				.then(userData => done(),
+							errorMessage => done())
   });
   after(function(done){
     User.collection.drop();
@@ -46,23 +48,33 @@ describe('Manager delete', function() {
     Review.collection.drop();
     done();
   });
+	// it('should register login successfully', function(done) {
+	// 	chai.request(server)
+	// 			.post('/Mapi/Mregister')
+	// 			.send({account:'444444', password:'444444', name:'haha', email:"chenzl25@mail2.sysu.edu.cn"})
+	// 			.then((res) => {
+	// 				expect(res.body.error).equal(false);	
+	// 				agent = chai.request.agent(server);
+	// 				agent
+	// 					.post('/api/login')
+	// 					.send({'account':'444444', 'password':'444444'})
+	// 					.then((res) =>{
+	// 				    expect(res.body.error).equal(false);
+	// 				    done();
+	// 					});
+	// 			}).catch(function(err) {
+	// 				done(err);
+	// 			});
+	// });
 	it('should register login successfully', function(done) {
-		chai.request(server)
-				.post('/Mapi/Mregister')
-				.send({account:'444444', password:'444444', name:'haha', email:"chenzl25@mail2.sysu.edu.cn"})
-				.then((res) => {
-					expect(res.body.error).equal(false);	
-					agent = chai.request.agent(server);
-					agent
-						.post('/api/login')
-						.send({'account':'444444', 'password':'444444'})
-						.then((res) =>{
-					    expect(res.body.error).equal(false);
-					    done();
-						});
-				}).catch(function(err) {
-					done(err);
-				});
+		agent = chai.request.agent(server);
+		agent
+			.post('/api/login')
+			.send({'account':'manager', 'password':'manager'})
+			.then((res) =>{
+		    expect(res.body.error).equal(false);
+		    done();
+			});
 	});
 	it('register successfully', function(done) {
 		agent

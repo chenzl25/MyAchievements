@@ -1,6 +1,7 @@
 import 'es6-shim';
 import 'es6-promise';
 import 'angular2/bundles/angular2-polyfills';
+// import 'angular2/bundles/angular2.dev'
 import 'rxjs/add/operator/map';
 import 'rxjs/add/operator/catch';
 import 'rxjs/add/operator/toPromise';	
@@ -14,6 +15,10 @@ import {UserService} from './app/lib/user.service';
 import {StorageService} from './app/lib/storage.service'
 import {HTTP_PROVIDERS} from 'angular2/http'
 import {ValidateService} from './app/lib/validate.service';
+// prod
+// import {enableProdMode} from 'angular2/core';
+// enableProdMode();
+// dorp
 bootstrap(AppComponent, [ROUTER_PROVIDERS,
 												 HTTP_PROVIDERS,
 												 UserService,

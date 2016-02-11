@@ -106,13 +106,14 @@ router.put('/review/:reviewId',
     errorMessage => res.json({error: true, message: errorMessage})
   );
 })
-
+//omit
 router.get('/assignment/:assignmentId', function(req, res) {
   Assignment.findById(req.params.assignmentId).then(
     assignmentData => res.json({error: false, assignmentData: assignmentData}),
     errorMessage => res.json({error: true, message: errorMessage})
   )
 });
+//timo
 router.get('/homework/:homeworkId/reviews', function(req, res) {
   User.studentGetHomeworkReviews(req.session.userData._id, req.params.homeworkId).then(
     reviewsData => res.json({error: false, reviewsData:reviewsData}),

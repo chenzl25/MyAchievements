@@ -2,8 +2,14 @@ var options = {
   db: {},
   server: { poolSize: 5 },
   user: '',
-  pass: ''
+  pass: '',
 };
+module.exports.managerInfo = {
+  managerAccount : 'manager',
+  managerPassword : 'manager',
+  managerName : 'Manager',
+  managerEmail : '595084778@qq.com'
+}
 var url_sessions = 'mongodb://localhost:27017/MyAchievementSessions';
 var url_db = 'mongodb://localhost:27017/MyAchievementApp';
 var url_db_test = 'mongodb://localhost:27017/MyAchievementTests';

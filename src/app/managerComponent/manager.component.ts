@@ -169,12 +169,10 @@ export class ManagerComponent implements OnInit {
 		this.groupList.forEach(groupItem => groupItem.indicate = false);
 	}
 	onItemDragEnter(event:DragEvent):void {
-		console.log('onItemDragEnter')
 		event.preventDefault();
 		event.toElement.classList.add('item-drag-over');
 	}
 	onItemDragLeave(event:DragEvent):void {
-		console.log('onItemDragLeave')
 		event.preventDefault();
 		event.toElement.classList.remove('item-drag-over');
 	}
@@ -186,11 +184,8 @@ export class ManagerComponent implements OnInit {
 	}
 	onGroupItemDrop(event:DragEvent, groupItem: Group):void {
 		event.toElement.classList.remove('item-drag-over');
-		console.log('Drop');
 		let transferData = event.dataTransfer.getData('text');
 		let parsedData = JSON.parse(transferData);
-		console.log(parsedData);
-		console.log(parsedData)
 		if (parsedData.flag === 'user' && parsedData.userData.position === 'assistant'){
 			let assistantItem = parsedData.userData;
 			this.manageService
@@ -220,11 +215,8 @@ export class ManagerComponent implements OnInit {
 	}
 	onClassItemDrop(event:DragEvent, classItem: Class):void {
 		event.toElement.classList.remove('item-drag-over');
-		console.log('Drop');
 		let transferData = event.dataTransfer.getData('text');
 		let parsedData = JSON.parse(transferData);
-		console.log(parsedData);
-		console.log(parsedData)
 		if (parsedData.flag === 'user' && parsedData.userData.position === 'teacher'){
 			let teacherItem = parsedData.userData;
 			this.manageService
@@ -253,11 +245,9 @@ export class ManagerComponent implements OnInit {
 		this.stateGCDragOver = false;
 	}
 	onGCDrop(event: DragEvent):void {
-		console.log('Drop');
 		this.stateGCDragOver = false;
 		let transferData = event.dataTransfer.getData('text');
 		let parsedData = JSON.parse(transferData);
-		console.log(parsedData);
 		switch(parsedData.flag) {
 			case 'user':
 				let userData = parsedData.userData;
@@ -401,7 +391,6 @@ export class ManagerComponent implements OnInit {
 			toUpdateClassItem.teachersId.push(teacherId);
 			let toUpdateTeacherItem = this.userList.find(v => v._id === teacherId);
 			toUpdateTeacherItem.classsId.push(classId);
-			console.log(toUpdateTeacherItem)
 	}
 	groupListAddAssistantToGroup(groupItem: Group, assistantItem: User):void {
 			let groupId = groupItem._id;
@@ -410,7 +399,6 @@ export class ManagerComponent implements OnInit {
 			toUpdateGroupItem.assistantsId.push(assistantId);
 			let toUpdateAssistantItem = this.userList.find(v => v._id === assistantId);
 			toUpdateAssistantItem.groupsId.push(groupId);
-			console.log(toUpdateAssistantItem)
 	}
 	groupListAddStudentToGroup(groupItem: Group, studentItem: User):void {
 			let groupId = groupItem._id;
@@ -419,7 +407,6 @@ export class ManagerComponent implements OnInit {
 			toUpdateGroupItem.studentsId.push(studentId);
 			let toUpdateStudentItem = this.userList.find(v => v._id === studentId);
 			toUpdateStudentItem.groupsId.push(groupId);
-			console.log(toUpdateStudentItem)
 	}
 	classIndicateForTeacher(teacherItem: User):void {
 		for (let i = 0; i < this.classList.length; i++) {

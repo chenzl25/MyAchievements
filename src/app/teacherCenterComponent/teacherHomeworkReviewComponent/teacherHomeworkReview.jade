@@ -1,0 +1,71 @@
+ul.list-group
+  li.list-group-item(*ngFor="#homeworkItem of toReviewHomeworkList")
+    .container-fluid
+      .col-sm-3
+        .row
+          img.homework-image([src]="'proxy/'+homeworkItem?.image")
+      .col-sm-7
+        .row
+          p.homework-review-message(*ngIf="homeworkItem.finalMessage") {{homeworkItem?.finalMessage}}
+          p.homework-review-message(*ngIf="!homeworkItem.finalMessage") 你还没写任何评审
+      .col-sm-2.bg-info
+        .row.rank-row
+          .col-sm-6.col-xs-6 {{'班级排名: ' + (homeworkItem?.classRank)}}
+          .col-sm-6.col-xs-6 {{'小组排名: ' + (homeworkItem?.groupRank)}}
+        .row
+          p.homework-owner-name {{homeworkItem?.LINK_owner?.name}} 
+        .row
+          p.homework-review-score(*ngIf="homeworkItem.finalScore") {{'分数: '+homeworkItem?.finalScore}}
+          p.homework-review-score(*ngIf="!homeworkItem.finalScore") 分数: null
+        .row.link-row
+          .col-sm-6
+            a([href]="homeworkItem?.github") Github
+          .col-sm-6
+            a([href]="'proxy/' + homeworkItem?.source") 源代码
+        .row
+           button.btn.btn-primary.btn-block.setup-create-review-button(*ngIf="!homeworkItem.finalScore && !homeworkItem.finalMessage",data-toggle="modal",data-target="#myCreateFinalReviewModal",(click)="onClickSetUpCreateFinalReview(homeworkItem._id)") 开始评审
+           button.btn.btn-primary.btn-block.setup-update-review-button(*ngIf="homeworkItem.finalScore || homeworkItem.finalMessage",data-toggle="modal",data-target="#myUpdateFinalReviewModal",(click)="onClickSetUpUpdateFinalReview(homeworkItem._id, homeworkItem.finalScore, homeworkItem.finalMessage)") 重新评审
+
+.modal.fade(id="myCreateFinalReviewModal",tabindex="-1",role="dialog",aria-labelledby="myCreateFinalReviewModalLabel")
+  .modal-dialog(role="document")
+    .modal-content
+      .modal-header
+        button.close(type="button",data-dismiss="modal",aria-label="Close")
+          span(aria-hidden="true") &times;
+        h4.modal-title(id="myCreateFinalReviewModalLabel") 提交评审
+        .modal-body
+          form.create-final-review-form
+            .form-group
+              label(for="final-review-create-score")
+              input.form-control(type="number",min="0",max="100",step="1",[(ngModel)]="inputHomeworkFinalScore",id="final-review-create-score", placeholder="评审分数")
+            .form-group
+              label(for="final-review-create-message")
+              textarea.form-control([(ngModel)]="inputHomeworkFinalMessage",id="final-review-create-message", placeholder="评审内容")
+          .messages-container
+            ul.messages-list
+              li([ngClass]="{'text-warning':!outputSuccess, 'text-success':outputSuccess}" ,*ngFor="#message of outputMessages") {{message}}
+        .modal-footer
+          button.btn.btn-default(type="button", data-dismiss="modal") 关闭
+          button.btn.btn-primary(type="button",(click)="onClickCreateFinalReview()") 提交
+
+.modal.fade(id="myUpdateFinalReviewModal",tabindex="-1",role="dialog",aria-labelledby="myUpdateFinalReviewModalLabel")
+  .modal-dialog(role="document")
+    .modal-content
+      .modal-header
+        button.close(type="button",data-dismiss="modal",aria-label="Close")
+          span(aria-hidden="true") &times;
+        h4.modal-title(id="myUpdateFinalReviewModalLabel") 重交评审
+        .modal-body
+          form.update-final-review-form
+            .form-group
+              label(for="final-review-update-score")
+              input.form-control(type="number",min="0",max="100",step="1",[(ngModel)]="inputHomeworkFinalScore",id="final-review-update-score", placeholder="评审分数")
+            .form-group
+              label(for="final-review-update-message")
+              textarea.form-control([(ngModel)]="inputHomeworkFinalMessage",id="final-review-update-message", placeholder="评审内容")
+          .messages-container
+            ul.messages-list
+              li([ngClass]="{'text-warning':!outputSuccess, 'text-success':outputSuccess}" ,*ngFor="#message of outputMessages") {{message}}
+        .modal-footer
+          button.btn.btn-default(type="button", data-dismiss="modal") 关闭
+          button.btn.btn-primary(type="button",(click)="onClickUpdateFinalReview()") 重交
